@@ -3,13 +3,22 @@
     <meta charset="utf-8"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Explaain CMS</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-XYCjB+hFAjSbgf9yKUgbysEjaVLOXhCgATTEBpCqT1R3jvG5LGRAK5ZIyRbH5vpX" crossorigin="anonymous">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="js/json-editor.js"></script>
     <style>
+      body {
+        background: #fff;
+      }
+      .title {
+        font-family: Lato;
+        color: #FF6F73;
+        font-weight: bolder;
+        margin-top: 0;
+      }
       #json-editor-container {
         border-radius: 5px;
         padding: 20px;
@@ -18,6 +27,7 @@
         border-top: 1px solid #f1f1f1;
         border-bottom: 1px solid #ccc;
         margin: 20px;
+        margin-top: 30px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         display: none;
       }
@@ -49,7 +59,10 @@
       #json-editor h3 {
         margin-top: 0;
       }
-      
+
+      #json-editor .fa {
+        margin-right: 5px;
+      }
       #json-editor .btn {
         border-radius: 4px !important;
         margin-right: 5px;
@@ -59,6 +72,10 @@
         position: absolute;
         display: none;
         z-index: 10;
+      }
+
+      #json-editor h3 .btn-group {
+        float: right;
       }
 
       #json-editor .property-selector {
@@ -71,6 +88,7 @@
         box-shadow: 0 5px 10px rgba(0,0,0,0.2);
         overflow-x: auto;
         overflow-x: hidden;
+        float: right;
       }
     </style>
   </head>
@@ -80,16 +98,17 @@
         <label>Search</label>
         <input type="text" name="search" class="form-control" placeholder="Search" />
       </form>
-      <div id="searchResults" style="height: 100%; width: 100%; overflow: auto; position: absolute; top: 0; left: 0; margin-top: 70px; padding: 10px;"></div>
+      <div id="searchResults" style="height: 100%; width: 100%; overflow: auto; position: absolute; top: 0; left: 0; margin-top: 80px; padding: 10px;"></div>
     </div>
     <div style="display: inline-block; width: 50%; height: 100%; padding: 10px; overflow: auto;">
       <div class="clearfix">
-        <h3 style="margin-top: 0;" class="pull-left">Explaain CMS</h3>
+        <h2 class="title pull-left">Explaain CMS</h2>
 
       <div id="newCardBtn" class="dropdown pull-right ">
         <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-        <i class="fa fa-lg fa-fw fa-plus-circle"></i> New …
-        <span class="caret"></span></button>
+          <i class="fa fa-lg fa-fw fa-plus-circle"></i> New …
+          <i class="fa fa-fw fa-caret-down"></i>
+        </button>
         <ul class="dropdown-menu"></ul>
       </div>
       <button class="btn btn-default pull-right" style="margin-right: 10px;" type="button" onclick="promptForApiKey()">
@@ -99,7 +118,7 @@
       </div>
       <div id="json-editor-container">
         <div id="json-editor"></div>
-        <div id="json-editor-buttons" style="display: none; text-align: right;">
+        <div id="json-editor-buttons" style="text-align: right;">
           <button onclick="cancel()" class="btn btn-default"><i class="fa fa-lg fa-fw fa-ban"></i> Cancel</button>
           <button onclick="deleteCard()" class="btn btn-danger btn-delete"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
           <button onclick="saveCard()" class="btn btn-primary"><i class="fa fa-lg fa-fw fa-check"></i> Save changes</button>
@@ -114,8 +133,8 @@
       var serverUrl = "http://explaain-api-develop.herokuapp.com";
       var apiKey = readCookie("apiKey");
       var schemas = {};
-      var updateCallback = function(id) {
-        window.frames['explaain'].postMessage({ action: 'update', id: id }, "*");
+      var previewCallback = function(id, action) {
+        window.frames['explaain'].postMessage({ action: action, id: id }, "*");
       };
       
       function promptForApiKey() {
@@ -168,7 +187,6 @@
         $("#json-editor").removeData('id');
         $("#json-editor").removeData('type');
         $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
-        $("#json-editor-buttons").hide();
         $.ajax({
           url: serverUrl+"/"+schemaName,
         }).done(function(jsonSchema) {
@@ -179,8 +197,7 @@
               schema: schemas[schemaName]
             }
           );
-          $("#json-editor-container").show();
-          $("#json-editor-buttons").show();
+          $("#json-editor-container").slideDown();
         });
       }
 
@@ -189,7 +206,6 @@
         $("#json-editor").removeData('id');
         $("#json-editor").removeData('type');
         $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
-        $("#json-editor-buttons").hide();
         var schemaName = uri.split("/")[uri.split("/").length-2];
         $.ajax({
           url: uri
@@ -204,8 +220,7 @@
               startval: json
             }
           );
-          $("#json-editor-container").show();
-          $("#json-editor-buttons").show();
+          $("#json-editor-container").slideDown();
         });
       }
       
@@ -239,7 +254,7 @@
             }
           })
           .done(function() {
-            updateCallback(uri);
+            previewCallback(uri, 'update');
             cancel();
           })
           .fail(function(err) {
@@ -256,7 +271,7 @@
             }
           })
           .done(function(response) {
-            updateCallback(response['@id']);
+            previewCallback(response['@id'], 'create');
             cancel();
           })
           .fail(function(err) {
@@ -279,7 +294,7 @@
           }
         })
         .done(function() {
-          updateCallback(uri);
+          previewCallback(uri, 'delete');
           cancel();
         })
         .fail(function(err) {
@@ -288,11 +303,9 @@
       }
       
       function cancel() {
-        $("#json-editor-container").hide();
-        $("#json-editor").html('');
+        $("#json-editor-container").slideUp();
         $("#json-editor").removeData('id');
         $("#json-editor").removeData('type');
-        $("#json-editor-buttons").hide();
       }
       
       $("#search").submit(function(e) {

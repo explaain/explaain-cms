@@ -2775,6 +2775,7 @@ JSONEditor.defaults.editors.object = JSONEditor.AbstractEditor.extend({
 
       // Object Properties Button
       this.addproperty_button = this.getButton('Properties','edit','Object Properties');
+      this.addproperty_button.innerHTML += (' <i class="fa fa-fw fa-caret-down"></i>');
       this.addproperty_button.addEventListener('click',function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -3333,10 +3334,10 @@ JSONEditor.defaults.editors.array = JSONEditor.AbstractEditor.extend({
     if(!this.item_title) {
       if(this.schema.items && !Array.isArray(this.schema.items)) {
         var tmp = this.jsoneditor.expandRefs(this.schema.items);
-        this.item_title = tmp.title || 'item';
+        this.item_title = tmp.title || '';
       }
       else {
-        this.item_title = 'item';
+        this.item_title = '';
       }
     }
     return this.item_title;
@@ -3374,7 +3375,7 @@ JSONEditor.defaults.editors.array = JSONEditor.AbstractEditor.extend({
     schema = this.jsoneditor.expandRefs(schema);
       
     this.item_info[stringified] = {
-      title: schema.title || "item",
+      title: schema.title || "#",
       'default': schema["default"],
       width: 12,
       child_editors: schema.properties || schema.items
@@ -3387,7 +3388,7 @@ JSONEditor.defaults.editors.array = JSONEditor.AbstractEditor.extend({
     var schema = this.getItemSchema(i);
     schema = this.jsoneditor.expandRefs(schema);
     schema.title = item_info.title+' '+(i+1);
-
+    
     var editor = this.jsoneditor.getEditorClass(schema);
 
     var holder;
@@ -6101,6 +6102,7 @@ JSONEditor.AbstractTheme = Class.extend({
     var el = document.createElement('div');
     el.setAttribute("json-editor-modal", "json-editor-modal");
     el.style.position = 'absolute';
+    el.style.right = 0;
     el.style.zIndex = '10';
     el.style.display = 'none';
     return el;
