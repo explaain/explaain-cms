@@ -44,18 +44,18 @@
       #json-editor div p {
         display: none;
       }
-      
+
       #json-editor .well {
         border-radius: 0;
         border: none;
         box-shadow: none;
         background: transparent;
       }
-      
+
       #json-editor textarea {
         min-height: 150px;
       }
-      
+
       #json-editor h3 {
         margin-top: 0;
       }
@@ -67,7 +67,7 @@
         border-radius: 4px !important;
         margin-right: 5px;
       }
-      
+
       #Xjson-editor[json-editor-modal] {
         position: absolute;
         display: none;
@@ -114,7 +114,7 @@
       <button class="btn btn-default pull-right" style="margin-right: 10px;" type="button" onclick="promptForApiKey()">
         <i class="fa fa-lg fa-fw fa-cog"></i> API Key
       </button>
-    
+
       </div>
       <div id="json-editor-container">
         <div id="json-editor"></div>
@@ -126,17 +126,17 @@
       </div>
     </div>
     <div style="display: inline-block; width: 25%; height: 100%; float: right;">
-      <iframe id="explaain" frameborder="0" style="height: 100%; width: 100%" src="https://explaain-landing-swipe-across.herokuapp.com/demo/?editing=true&db=true"></iframe>
+      <iframe id="explaain" frameborder="0" style="height: 100%; width: 100%" src="http://explaain-landing-swipe-across.herokuapp.com/demo/?editing=true&db=true"></iframe>
     </div>
     <script>
-    
+
       var serverUrl = "http://explaain-api-develop.herokuapp.com";
       var apiKey = readCookie("apiKey");
       var schemas = {};
       var previewCallback = function(id, action) {
         window.frames['explaain'].postMessage({ action: action, id: id }, "*");
       };
-      
+
       function promptForApiKey() {
         var newApiKey = prompt("Please enter your API Key", apiKey);
         if (!newApiKey)
@@ -144,10 +144,10 @@
         apiKey = newApiKey;
         saveCookie("apiKey", newApiKey);
       }
-      
+
       if (!apiKey)
         promptForApiKey();
-      
+
       JSONEditor.defaults.options.theme = "bootstrap3";
       JSONEditor.defaults.options.iconlib = "fontawesome4";
       JSONEditor.defaults.options.disable_collapse = true;
@@ -156,9 +156,9 @@
       JSONEditor.defaults.options.remove_empty_properties = true;
       JSONEditor.defaults.options.disable_array_delete_all_rows = true;
       JSONEditor.defaults.options.disable_array_delete_last_row = true;
-            
+
       var jsonEditorInstance;
-      
+
       // Fetch all schemas on load (starting with getting a list of them all)
       $.ajax({
         url: serverUrl+"/schemas",
@@ -170,7 +170,7 @@
           $.ajax({
             url: serverUrl+"/"+schemaName,
           }).done(function(jsonSchema) {
-            
+
             $("#newCardBtn .dropdown-menu").append('<li><a href="#" onclick="newCard(\''+schemaName+'\')">'+schemaName+'</a></li>');
             schemas[schemaName] = jsonSchema;
           });
@@ -181,7 +181,7 @@
         if (event.data.action = "edit")
           return displayCard(event.data.id);
       }, false);
-      
+
       function newCard(schemaName) {
         $("#json-editor-container").hide();
         $("#json-editor").removeData('id');
@@ -192,7 +192,7 @@
         }).done(function(jsonSchema) {
           $("#json-editor").data('type', schemaName);
           $("#json-editor").html('');
-          jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"), 
+          jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"),
             {
               schema: schemas[schemaName]
             }
@@ -214,7 +214,7 @@
           $("#json-editor").data('type', schemaName);
           $("#json-editor").data('id', json['@id']);
           $("#json-editor-buttons .btn-delete").removeAttr("disabled");
-          jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"), 
+          jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"),
             {
               schema: schemas[schemaName],
               startval: json
@@ -223,9 +223,9 @@
           $("#json-editor-container").slideDown();
         });
       }
-      
+
       function saveCard() {
-          
+
         /*
         // Skipping this for now as editor validation is janky
         var errors = jsonEditorInstance.validate();
@@ -240,7 +240,7 @@
           console.log(jsonEditorInstance);
         }
         */
-        
+
         var schema = $("#json-editor").data('type');
         var uri = $("#json-editor").data('id');
         if (uri) {
@@ -301,24 +301,24 @@
           alert("Unable to save card");
         });
       }
-      
+
       function cancel() {
         $("#json-editor-container").slideUp();
         $("#json-editor").removeData('id');
         $("#json-editor").removeData('type');
       }
-      
+
       $("#search").submit(function(e) {
         e.preventDefault();
-        
+
         if ($('#search input[name="search"]').val().trim() == "")
           return;
-        
+
         $("#searchResults").html('');
-        
+
         var searchesReturned = 0;
         var resultsReturned = 0;
-        
+
         // Search
         for (var schemaName in schemas) {
           $.ajax({
@@ -336,7 +336,7 @@
         };
         return false;
       });
-      
+
       function saveCookie(cookieName, value, days) {
         var expires = "";
         if (days) {
