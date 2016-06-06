@@ -5,6 +5,7 @@
     <title>Explaain CMS</title>
     <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.6/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-XYCjB+hFAjSbgf9yKUgbysEjaVLOXhCgATTEBpCqT1R3jvG5LGRAK5ZIyRbH5vpX" crossorigin="anonymous">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+    <link rel="stylesheet" href="stylesheets/animate.css">
     <script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
@@ -52,6 +53,10 @@
         background: transparent;
       }
 
+      #json-editor > div > .well {
+        margin-bottom: 0;
+      }
+      
       #json-editor textarea {
         min-height: 150px;
       }
@@ -103,24 +108,23 @@
     <div style="display: inline-block; width: 50%; height: 100%; padding: 10px; overflow: auto;">
       <div class="clearfix">
         <h2 class="title pull-left">Explaain CMS</h2>
-
-      <div id="newCardBtn" class="dropdown pull-right ">
-        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-          <i class="fa fa-lg fa-fw fa-plus-circle"></i> New …
-          <i class="fa fa-fw fa-caret-down"></i>
+        <div id="newCardBtn" class="dropdown pull-right ">
+          <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+            <i class="fa fa-lg fa-fw fa-plus-circle"></i> New …
+            <i class="fa fa-fw fa-caret-down"></i>
+          </button>
+          <ul class="dropdown-menu"></ul>
+        </div>
+        <button class="btn btn-default pull-right" style="margin-right: 10px;" type="button" onclick="promptForApiKey()">
+          <i class="fa fa-lg fa-fw fa-cog"></i> API Key
         </button>
-        <ul class="dropdown-menu"></ul>
-      </div>
-      <button class="btn btn-default pull-right" style="margin-right: 10px;" type="button" onclick="promptForApiKey()">
-        <i class="fa fa-lg fa-fw fa-cog"></i> API Key
-      </button>
-
       </div>
       <div id="json-editor-container">
         <div id="json-editor"></div>
+        <div class="messages"></div>
         <div id="json-editor-buttons" style="text-align: right;">
-          <button onclick="cancel()" class="btn btn-default"><i class="fa fa-lg fa-fw fa-ban"></i> Cancel</button>
-          <button onclick="deleteCard()" class="btn btn-danger btn-delete"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
+          <button onclick="deleteCard()" class="btn btn-danger btn-delete pull-left"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
+          <button onclick="hideCard()" class="btn btn-default"><i class="fa fa-lg fa-fw fa-ban"></i> Close</button>
           <button onclick="saveCard()" class="btn btn-primary"><i class="fa fa-lg fa-fw fa-check"></i> Save changes</button>
         </div>
       </div>
@@ -197,6 +201,7 @@
         $("#json-editor").removeData('id');
         $("#json-editor").removeData('type');
         $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
+        $("#json-editor-container .messages").html('');
         $.ajax({
           url: serverUrl+"/"+schemaName,
         }).done(function(jsonSchema) {
@@ -207,15 +212,16 @@
               schema: schemas[schemaName]
             }
           );
-          $("#json-editor-container").slideDown();
+          $("#json-editor-container").show().animateCss('zoomIn');
         });
       }
 
       function displayCard(uri) {
-        $("#json-editor-container").hide();
+        $("#json-editor-container .messages").html('');
         $("#json-editor").removeData('id');
         $("#json-editor").removeData('type');
         $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
+        $("#json-editor-container .messages").html();
         var schemaName = uri.split("/")[uri.split("/").length-2];
         $.ajax({
           url: uri
@@ -230,12 +236,12 @@
               startval: json
             }
           );
-          $("#json-editor-container").slideDown();
+          $("#json-editor-container").show().animateCss('zoomIn');
         });
       }
 
       function saveCard() {
-
+        $("#json-editor-container .messages").html('');
         /*
         // Skipping this for now as editor validation is janky
         var errors = jsonEditorInstance.validate();
@@ -265,10 +271,13 @@
           })
           .done(function() {
             previewCallback(uri, 'update');
-            cancel();
+            // Refresh search results
+            $("#search").submit();
+            $("#json-editor-container .messages").html('<div class="alert alert-success"><i class="fa fa-fw fa-check"></i> Changes saved</div>');
           })
           .fail(function(err) {
-            alert("Unable to save card");
+            var message = err.message || "Unable to save changes";
+            $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
           });
         } else {
           // Create
@@ -282,47 +291,59 @@
           })
           .done(function(response) {
             previewCallback(response['@id'], 'create');
-            cancel();
+            // Refresh search results
+            $("#search").submit();
+            $("#json-editor-container .messages").html('<div class="alert alert-success"><i class="fa fa-fw fa-check"></i> Changes saved</div>');
           })
           .fail(function(err) {
-            alert("Unable to save card");
-            console.log(jsonEditorInstance.getValue());
+            var message = err.message || "Unable to create new card";
+            $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
           });
         }
       }
 
       function deleteCard() {
-        var schema = $("#json-editor").data('type');
-        var uri = $("#json-editor").data('id');
-        if (!uri)
-          return;
-        $.ajax({
-          type: 'DELETE',
-          url: uri,
-          headers: {
-            'x-api-key': apiKey
-          }
-        })
-        .done(function() {
-          previewCallback(uri, 'delete');
-          cancel();
-        })
-        .fail(function(err) {
-          alert("Unable to save card");
-        });
+        if (confirm("Are you sure you want to delete this card?\n\nThis action cannot be undone.")) {
+          var schema = $("#json-editor").data('type');
+          var uri = $("#json-editor").data('id');
+          if (!uri)
+            return;
+          $.ajax({
+            type: 'DELETE',
+            url: uri,
+            headers: {
+              'x-api-key': apiKey
+            }
+          })
+          .done(function() {
+            previewCallback(uri, 'delete');
+            // Custom animation style when deleting a card
+            hideCard('fadeOutDownBig');
+            // Refresh search results
+            $("#search").submit();
+          })
+          .fail(function(err) {
+            var message = err.message || "Unable to delete card";
+            $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
+          });
+        }
       }
 
-      function cancel() {
-        $("#json-editor-container").slideUp();
-        $("#json-editor").removeData('id');
-        $("#json-editor").removeData('type');
+      function hideCard(customAnimation) {
+        var animation = customAnimation || 'bounceOutUp';
+        $("#json-editor-container").animateCss(animation, function() {
+          $("#json-editor-container").hide();
+          $("#json-editor").removeData('id');
+          $("#json-editor").removeData('type');
+          $("#json-editor-container .messages").html('');
+        });
       }
 
       $("#search").submit(function(e) {
         e.preventDefault();
 
-        if ($('#search input[name="search"]').val().trim() == "")
-          return;
+        //if ($('#search input[name="search"]').val().trim() == "")
+        //  return;
 
         $("#searchResults").html('');
 
@@ -337,7 +358,7 @@
             searchesReturned++;
             results.forEach(function(result) {
               var type = result['@id'].split("/")[result['@id'].split("/").length-2];
-              $("#searchResults").append('<p><button class="btn btn-default btn-block" style="text-align: left" onclick="displayCard(\''+result['@id']+'\')"><strong>'+result.name+'</strong> ('+type+') <i style="margin-top: 4px;" class="fa fa-lg fa-chevron-right pull-right"></i></button></p>');
+              $("#searchResults").append('<p><button class="btn btn-default btn-block" style="text-align: left" onclick="displayCard(\''+result['@id']+'\')"><strong>'+(result.name || "(Untitled)")+'</strong> ('+type+') <i style="margin-top: 4px;" class="fa fa-lg fa-chevron-right pull-right"></i></button></p>');
               resultsReturned++;
             });
             if (searchesReturned == Object.keys(schemas).length && resultsReturned == 0)
@@ -367,6 +388,19 @@
         }
         return null;
       }
+      
+      $.fn.extend({
+        animateCss: function(animationName, callback) {
+          var context = this;
+          var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
+          $(this).addClass('animated ' + animationName).one(animationEnd, function() {
+            $(this).removeClass('animated ' + animationName);
+            if (callback)
+              callback(null, context)
+          });
+          return this;
+        }
+      });
     </script>
   </body>
 </html>
