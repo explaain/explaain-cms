@@ -133,7 +133,7 @@
       var apiKey = readCookie("apiKey");
       var schemas = {};
       var previewCallback = function(id, action) {
-        window.frames['explaain'].postMessage({ action: action, id: id }, "*");
+        window.frames['explaain'].contentWindow.postMessage({ action: action, id: id }, "*");
       };
 
       function promptForApiKey() {
