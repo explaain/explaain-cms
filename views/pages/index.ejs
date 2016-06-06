@@ -133,7 +133,18 @@
       var apiKey = readCookie("apiKey");
       var schemas = {};
       var previewCallback = function(id, action) {
-        window.frames['explaain'].contentWindow.postMessage({ action: action, id: id }, "*");
+        try {
+          // Post message to the preview pane to let it now saving worked
+          if (window.frames['explaain'].postMessage) {
+            // e.g. Safari
+            window.frames['explaain'].postMessage({ action: action, id: id }, "*");
+          } else if (window.frames['explaain'].contentWindow.postMessage) {
+            // e.g. Chrome, Firefox
+            window.frames['explaain'].contentWindow.postMessage({ action: action, id: id }, "*");
+          }
+        } catch (e) {
+          console.log(e);
+        }
       };
 
       function promptForApiKey() {
