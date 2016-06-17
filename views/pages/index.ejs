@@ -3,112 +3,17 @@
     <meta charset="utf-8"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Explaain CMS</title>
-    <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.6/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-XYCjB+hFAjSbgf9yKUgbysEjaVLOXhCgATTEBpCqT1R3jvG5LGRAK5ZIyRbH5vpX" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/paper/bootstrap.min.css" rel="stylesheet" integrity="sha384-2mX2PSpkRSXLQzmNzH3gwK6srb06+OfbDlYjbog8LQuALYJjuQ3+Yzy2JIWNV9rW" crossorigin="anonymous">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
-    <link rel="stylesheet" href="stylesheets/animate.css">
-    <script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-    <script src="js/json-editor.js"></script>
-    <style>
-      body {
-        background: #fff;
-      }
-      .title {
-        font-family: Lato;
-        color: #FF6F73;
-        font-weight: bolder;
-        margin-top: 0;
-      }
-      #json-editor-container {
-        border-radius: 5px;
-        padding: 20px;
-        background: #f1f1f1;
-        border: 1px solid #ddd;
-        border-top: 1px solid #f1f1f1;
-        border-bottom: 1px solid #ccc;
-        margin: 20px;
-        margin-top: 30px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        display: none;
-      }
-
-      .btn {
-        min-height: 34px;
-      }
-
-      #json-editor label,
-      #json-editor .control-label {
-        text-transform: capitalize;
-      }
-
-      #json-editor div p {
-        display: none;
-      }
-
-      #json-editor .well {
-        border-radius: 0;
-        border: none;
-        box-shadow: none;
-        background: transparent;
-      }
-
-      #json-editor > div > .well {
-        margin-bottom: 0;
-      }
-      
-      #json-editor textarea {
-        min-height: 150px;
-      }
-
-      #json-editor h3 {
-        margin-top: 0;
-      }
-
-      #json-editor .fa {
-        margin-right: 5px;
-      }
-      #json-editor .btn {
-        border-radius: 4px !important;
-        margin-right: 5px;
-      }
-
-      #Xjson-editor[json-editor-modal] {
-        position: absolute;
-        display: none;
-        z-index: 10;
-      }
-
-      #json-editor h3 .btn-group {
-        float: right;
-      }
-
-      #json-editor .property-selector {
-        background: white;
-        width: 300px;
-        max-height: 200px;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #aaa;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-        overflow-x: auto;
-        overflow-x: hidden;
-        float: right;
-      }
-    </style>
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="css/main.css">
   </head>
   <body>
-    <div style="position: relative; display: inline-block; width: 25%; height: 100%; float: left; background: #eee; padding: 10px; overflow: hidden;">
-      <form id="search">
-        <label>Search</label>
-        <input type="text" name="search" class="form-control" placeholder="Search" />
-      </form>
-      <div id="searchResults" style="height: 100%; width: 100%; overflow: auto; position: absolute; top: 0; left: 0; margin-top: 80px; padding: 10px;"></div>
-    </div>
-    <div style="display: inline-block; width: 50%; height: 100%; padding: 10px; overflow: auto;">
-      <div class="clearfix">
-        <h2 class="title pull-left">Explaain CMS</h2>
-        <div id="newCardBtn" class="dropdown pull-right ">
+    <div style="position: relative; display: inline-block; width: 75%; height: 100%; float: left; overflow: hidden;">
+      
+      <div style="position: absolute; top: 0px; left: 0px; width: 100%; padding: 10px; background: #ddd; height: 55px; z-index: 3">
+        <div class="pull-left"><h1 class="title">Explaain CMS</h1></div>
+        <div id="newCardBtn" class="dropdown pull-right">
           <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
             <i class="fa fa-lg fa-fw fa-plus-circle"></i> New …
             <i class="fa fa-fw fa-caret-down"></i>
@@ -119,288 +24,37 @@
           <i class="fa fa-lg fa-fw fa-cog"></i> API Key
         </button>
       </div>
-      <div id="json-editor-container">
-        <div id="json-editor"></div>
-        <div class="messages"></div>
-        <div id="json-editor-buttons" style="text-align: right;">
-          <button onclick="deleteCard()" class="btn btn-danger btn-delete pull-left"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
-          <button onclick="hideCard()" class="btn btn-default"><i class="fa fa-lg fa-fw fa-ban"></i> Close</button>
-          <button onclick="saveCard()" class="btn btn-primary"><i class="fa fa-lg fa-fw fa-check"></i> Save changes</button>
+        
+      <div style="position: absolute; left: 0; top: 65px; width: 350px; z-index: 2">
+        <form id="search">
+          <div class="input-group">
+            <span class="input-group-addon" id="basic-addon1"><i class="fa fa-lg fa-search"></i></span>
+            <input type="text" name="search" class="form-control" placeholder="Search" />
+          </div>
+        </form>
+        <div id="searchResults" style="width: 100%; overflow: auto; position: absolute; top: 0; left: 0; margin-top: 40px; padding: 10px;"></div>
+      </div>
+      
+      <div style="position: absolute; top: 0; left; 0; height: 100%; width: 100%; padding: 20px; padding-top: 60px; padding-left: 370px; overflow: auto; z-index: 1">
+        <div id="json-editor-container">
+          <div id="json-editor"></div>
+          <div class="messages"></div>
+          <div id="json-editor-buttons" style="text-align: right;">
+            <button onclick="deleteCard()" class="btn btn-danger btn-delete pull-left"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
+            <button onclick="hideCard()" class="btn btn-default"><i class="fa fa-lg fa-fw fa-ban"></i> Close</button>
+            <button onclick="saveCard()" class="btn btn-primary"><i class="fa fa-lg fa-fw fa-check"></i> Save</button>
+          </div>
         </div>
       </div>
+      
     </div>
     <div style="display: inline-block; width: 25%; height: 100%; float: right;">
       <iframe id="explaain" frameborder="0" style="height: 100%; width: 100%" src="//explaain-landing-swipe-across.herokuapp.com/demo/?editing=true&db=true"></iframe>
     </div>
-    <script>
-      var serverUrl = "https://explaain-api-develop.herokuapp.com";
-      var apiKey = readCookie("apiKey");
-      var schemas = {};
-      var previewCallback = function(id, action) {
-        try {
-          // Post message to the preview pane to let it now saving worked
-          if (window.frames['explaain'].postMessage) {
-            // e.g. Safari
-            window.frames['explaain'].postMessage({ action: action, id: id }, "*");
-          } else if (window.frames['explaain'].contentWindow.postMessage) {
-            // e.g. Chrome, Firefox
-            window.frames['explaain'].contentWindow.postMessage({ action: action, id: id }, "*");
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      };
-
-      function promptForApiKey() {
-        var newApiKey = prompt("Please enter your API Key", apiKey);
-        if (!newApiKey)
-          return;
-        apiKey = newApiKey;
-        saveCookie("apiKey", newApiKey);
-      }
-
-      if (!apiKey)
-        promptForApiKey();
-
-      JSONEditor.defaults.options.theme = "bootstrap3";
-      JSONEditor.defaults.options.iconlib = "fontawesome4";
-      JSONEditor.defaults.options.disable_collapse = true;
-      JSONEditor.defaults.options.disable_edit_json = true;
-      JSONEditor.defaults.options.disable_properties = false;
-      JSONEditor.defaults.options.remove_empty_properties = true;
-      JSONEditor.defaults.options.disable_array_delete_all_rows = true;
-      JSONEditor.defaults.options.disable_array_delete_last_row = true;
-
-      var jsonEditorInstance;
-
-      // Fetch all schemas on load (starting with getting a list of them all)
-      $.ajax({
-        url: serverUrl+"/schemas",
-      }).done(function(response) {
-        if (!response.schemas)
-          return alert("Error: Could not connect to server")
-        response.schemas.forEach(function(schemaName) {
-          // Fetch each schema
-          $.ajax({
-            url: serverUrl+"/"+schemaName,
-          }).done(function(jsonSchema) {
-
-            $("#newCardBtn .dropdown-menu").append('<li><a href="#" onclick="newCard(\''+schemaName+'\')">'+schemaName+'</a></li>');
-            schemas[schemaName] = jsonSchema;
-          });
-        });
-      });
-
-      window.addEventListener('message', function(event) {
-        if (event.data.action = "edit")
-          return displayCard(event.data.id);
-      }, false);
-
-      function newCard(schemaName) {
-        $("#json-editor-container").hide();
-        $("#json-editor").removeData('id');
-        $("#json-editor").removeData('type');
-        $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
-        $("#json-editor-container .messages").html('');
-        $.ajax({
-          url: serverUrl+"/"+schemaName,
-        }).done(function(jsonSchema) {
-          $("#json-editor").data('type', schemaName);
-          $("#json-editor").html('');
-          jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"),
-            {
-              schema: schemas[schemaName]
-            }
-          );
-          $("#json-editor-container").show().animateCss('zoomIn');
-        });
-      }
-
-      function displayCard(uri) {
-        $("#json-editor-container .messages").html('');
-        $("#json-editor").removeData('id');
-        $("#json-editor").removeData('type');
-        $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
-        $("#json-editor-container .messages").html();
-        var schemaName = uri.split("/")[uri.split("/").length-2];
-        $.ajax({
-          url: uri
-        }).done(function(json) {
-          $("#json-editor").html('');
-          $("#json-editor").data('type', schemaName);
-          $("#json-editor").data('id', json['@id']);
-          $("#json-editor-buttons .btn-delete").removeAttr("disabled");
-          jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"),
-            {
-              schema: schemas[schemaName],
-              startval: json
-            }
-          );
-          $("#json-editor-container").show().animateCss('zoomIn');
-        });
-      }
-
-      function saveCard() {
-        $("#json-editor-container .messages").html('');
-        /*
-        // Skipping this for now as editor validation is janky
-        var errors = jsonEditorInstance.validate();
-        if (errors.length) {
-          alert("Validation failed");
-          // errors is an array of objects, each with a `path`, `property`, and `message` parameter
-          // `property` is the schema keyword that triggered the validation error (e.g. "minLength")
-          // `path` is a dot separated path into the JSON object (e.g. "root.path.to.field")
-          console.log(errors);
-        } else {
-          // is valid
-          console.log(jsonEditorInstance);
-        }
-        */
-
-        var schema = $("#json-editor").data('type');
-        var uri = $("#json-editor").data('id');
-        if (uri) {
-          // Update
-          $.ajax({
-            type: 'PUT',
-            url: uri,
-            data: jsonEditorInstance.getValue(),
-            headers: {
-              'x-api-key': apiKey
-            }
-          })
-          .done(function() {
-            previewCallback(uri, 'update');
-            // Refresh search results
-            $("#search").submit();
-            $("#json-editor-container .messages").html('<div class="alert alert-success"><i class="fa fa-fw fa-check"></i> Changes saved</div>');
-          })
-          .fail(function(err) {
-            var message = err.message || "Unable to save changes";
-            $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
-          });
-        } else {
-          // Create
-          $.ajax({
-            type: 'POST',
-            url: serverUrl+"/"+schema,
-            data: jsonEditorInstance.getValue(),
-            headers: {
-              'x-api-key': apiKey
-            }
-          })
-          .done(function(response) {
-            previewCallback(response['@id'], 'create');
-            // Refresh search results
-            $("#search").submit();
-            $("#json-editor-container .messages").html('<div class="alert alert-success"><i class="fa fa-fw fa-check"></i> Changes saved</div>');
-          })
-          .fail(function(err) {
-            var message = err.message || "Unable to create new card";
-            $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
-          });
-        }
-      }
-
-      function deleteCard() {
-        if (confirm("Are you sure you want to delete this card?\n\nThis action cannot be undone.")) {
-          var schema = $("#json-editor").data('type');
-          var uri = $("#json-editor").data('id');
-          if (!uri)
-            return;
-          $.ajax({
-            type: 'DELETE',
-            url: uri,
-            headers: {
-              'x-api-key': apiKey
-            }
-          })
-          .done(function() {
-            previewCallback(uri, 'delete');
-            // Custom animation style when deleting a card
-            hideCard('fadeOutDownBig');
-            // Refresh search results
-            $("#search").submit();
-          })
-          .fail(function(err) {
-            var message = err.message || "Unable to delete card";
-            $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
-          });
-        }
-      }
-
-      function hideCard(customAnimation) {
-        var animation = customAnimation || 'bounceOutUp';
-        $("#json-editor-container").animateCss(animation, function() {
-          $("#json-editor-container").hide();
-          $("#json-editor").removeData('id');
-          $("#json-editor").removeData('type');
-          $("#json-editor-container .messages").html('');
-        });
-      }
-
-      $("#search").submit(function(e) {
-        e.preventDefault();
-
-        //if ($('#search input[name="search"]').val().trim() == "")
-        //  return;
-
-        $("#searchResults").html('');
-
-        var searchesReturned = 0;
-        var resultsReturned = 0;
-
-        // Search
-        for (var schemaName in schemas) {
-          $.ajax({
-            url: serverUrl+"/"+schemaName+"/search?q="+encodeURIComponent($('#search input[name="search"]').val()),
-          }).done(function(results) {
-            searchesReturned++;
-            results.forEach(function(result) {
-              var type = result['@id'].split("/")[result['@id'].split("/").length-2];
-              $("#searchResults").append('<p><button class="btn btn-default btn-block" style="text-align: left" onclick="displayCard(\''+result['@id']+'\')"><strong>'+(result.name || "(Untitled)")+'</strong> ('+type+') <i style="margin-top: 4px;" class="fa fa-lg fa-chevron-right pull-right"></i></button></p>');
-              resultsReturned++;
-            });
-            if (searchesReturned == Object.keys(schemas).length && resultsReturned == 0)
-              $("#searchResults").append('<p class="text-muted">No results</p>');
-          });
-        };
-        return false;
-      });
-
-      function saveCookie(cookieName, value, days) {
-        var expires = "";
-        if (days) {
-          var date = new Date();
-          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-          var expires = "; expires=" + date.toGMTString();
-        }
-        document.cookie = cookieName + "=" + value + expires + "; path=/";
-      }
-
-      function readCookie(cookieName) {
-        var nameEQ = cookieName + "=";
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-          var c = ca[i];
-          while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-          if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-      }
-      
-      $.fn.extend({
-        animateCss: function(animationName, callback) {
-          var context = this;
-          var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
-          $(this).addClass('animated ' + animationName).one(animationEnd, function() {
-            $(this).removeClass('animated ' + animationName);
-            if (callback)
-              callback(null, context)
-          });
-          return this;
-        }
-      });
-    </script>
+    <script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="js/json-editor.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

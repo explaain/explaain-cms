@@ -1,0 +1,99 @@
+body {
+  background: #fff;
+}
+
+body,h1,h2,h3,h4,h5,p,li,.btn {
+  font-family: sans-serif !important;
+}
+
+.title {
+  font-family: Lato;
+  margin-top: 0;
+  font-size: 32px;
+}
+
+#json-editor-container {
+  padding: 20px;
+  background: #eee;
+  margin: 20px;
+  margin-top: 30px;
+  box-shadow: 0 5px 50px rgba(0,0,0,0.2);
+  display: none;
+  x-index: 100;
+}
+
+.btn {
+  min-height: 34px;
+  box-shadow: none !important;
+  border-radius: 0;
+  font-weight: bold;
+}
+
+input.form-control,
+textarea.form-control {
+  background: #fff;
+  padding: 5px 10px !important;
+}
+
+#search input.form-control {
+  padding: 5px 0 !important;
+}
+
+#json-editor label,
+#json-editor .control-label {
+  text-transform: capitalize;
+}
+
+#json-editor div p {
+  display: none;
+}
+
+#json-editor .well {
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+#json-editor > div > .well {
+  margin-bottom: 0;
+}
+
+#json-editor textarea {
+  min-height: 150px;
+}
+
+#json-editor h3 {
+  margin-top: 0;
+}
+
+#json-editor .fa {
+  margin-right: 5px;
+}
+#json-editor .btn {
+  border-radius: 4px !important;
+  margin-right: 5px;
+}
+
+#Xjson-editor[json-editor-modal] {
+  position: absolute;
+  display: none;
+  z-index: 10;
+}
+
+#json-editor h3 .btn-group {
+  float: right;
+}
+
+#json-editor .property-selector {
+  background: white;
+  width: 300px;
+  max-height: 200px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+  overflow-x: auto;
+  overflow-x: hidden;
+  float: right;
+}
