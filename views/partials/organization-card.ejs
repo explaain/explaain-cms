@@ -1,0 +1,20 @@
+<script data-template="Organization" type="text/x-jsrender">
+  <form>
+    <div class="from-group">
+      <label>Name</label>
+      <input type="text" class="form-control" name="name" value="{{:name}}" />
+    </div>
+    <div class="from-group">
+      <label>Description</label>
+      <textarea name="description" class="form-control">{{:description}}</textarea>
+    </div>
+    <div class="from-group">
+      <label><i class="fa fa-fw fa-image"></i> Image URL</label>
+      <input type="text" class="form-control" name="image" value="{{:image}}" />
+    </div>
+    <div style="margin: 20px 0 0 0; text-align: right;">
+      <button type="button" onclick="deleteCard(this)" class="btn btn-danger btn-delete pull-left"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
+      <button type="button" onclick="saveCard(this)" class="btn btn-primary"><i class="fa fa-lg fa-fw fa-check"></i> Save</button>
+    </div>
+  </form>
+</script>

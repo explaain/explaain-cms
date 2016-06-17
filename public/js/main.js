@@ -1,7 +1,6 @@
-var serverUrl = "https://explaain-api-develop.herokuapp.com";
-var apiKey = readCookie("apiKey");
+var gServerUrl = "https://explaain-api-develop.herokuapp.com";
+var gApiKey = readCookie("apiKey");
 var schemas = {};
-var jsonEditorInstance;
 var previewCallback = function(id, action) {
   try {
     // Post message to the preview pane to let it now saving worked
@@ -13,38 +12,32 @@ var previewCallback = function(id, action) {
       window.frames['explaain'].contentWindow.postMessage({ action: action, id: id }, "*");
     }
   } catch (e) {
+    console.log("Error sending message to app-preview frame");
     console.log(e);
   }
 };
 
 
 $(function() {
-
-  if (!apiKey)
+  if (!gApiKey)
     promptForApiKey();
-
-  JSONEditor.defaults.options.theme = "bootstrap3";
-  JSONEditor.defaults.options.iconlib = "fontawesome4";
-  JSONEditor.defaults.options.disable_collapse = true;
-  JSONEditor.defaults.options.disable_edit_json = true;
-  JSONEditor.defaults.options.disable_properties = false;
-  JSONEditor.defaults.options.remove_empty_properties = true;
-  JSONEditor.defaults.options.disable_array_delete_all_rows = true;
-  JSONEditor.defaults.options.disable_array_delete_last_row = true;
 
   // Fetch all schemas on load (starting with getting a list of them all)
   $.ajax({
-    url: serverUrl+"/schemas",
+    url: gServerUrl+"/schemas",
   }).done(function(response) {
     if (!response.schemas)
       return alert("Error: Could not connect to server")
     response.schemas.forEach(function(schemaName) {
       // Fetch each schema
       $.ajax({
-        url: serverUrl+"/"+schemaName,
+        url: gServerUrl+"/"+schemaName,
       }).done(function(jsonSchema) {
-
-        $("#newCardBtn .dropdown-menu").append('<li><a href="#" onclick="newCard(\''+schemaName+'\')">'+schemaName+'</a></li>');
+        
+        // If we have a template for this schema add it to the New Card dropdown
+        if ($('script[data-template="'+schemaName+'"]').length != 0)
+          $("#newCardBtn .dropdown-menu").append('<li><a href="#" onclick="displayCard(null, \''+schemaName+'\')">'+schemaName+'</a></li>');
+        
         schemas[schemaName] = jsonSchema;
       });
     });
@@ -54,8 +47,7 @@ $(function() {
     if (event.data.action = "edit")
       return displayCard(event.data.id);
   }, false);
-
-
+  
   $("#search").submit(function(e) {
     e.preventDefault();
     
@@ -67,7 +59,7 @@ $(function() {
     // Search
     for (var schemaName in schemas) {
       $.ajax({
-        url: serverUrl+"/"+schemaName+"/search?q="+encodeURIComponent($('#search input[name="search"]').val()),
+        url: gServerUrl+"/"+schemaName+"/search?q="+encodeURIComponent($('#search input[name="search"]').val()),
       }).done(function(results) {
         searchesReturned++;
         results.forEach(function(result) {
@@ -76,7 +68,7 @@ $(function() {
           resultsReturned++;
         });
         if (searchesReturned == Object.keys(schemas).length && resultsReturned == 0)
-          $("#searchResults").append('<p class="text-muted">No results</p>');
+          $("#searchResults").append('<p class="lead text-muted" style="padding: 10px;">No results</p>');
       });
     };
     return false;
@@ -95,6 +87,22 @@ $(function() {
     }
   });
 
+  $.fn.serializeObject = function(){
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+  };
+  
 });
 
 /**
@@ -102,144 +110,191 @@ $(function() {
  */
 
 function promptForApiKey() {
-  var newApiKey = prompt("Please enter your API Key", apiKey);
+  var newApiKey = prompt("Please enter your API Key", gApiKey);
   if (!newApiKey)
     return;
-  apiKey = newApiKey;
+  gApiKey = newApiKey;
   saveCookie("apiKey", newApiKey);
 }
 
-function newCard(schemaName) {
-  $("#json-editor-container").hide();
-  $("#json-editor").removeData('id');
-  $("#json-editor").removeData('type');
-  $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
-  $("#json-editor-container .messages").html('');
-  $.ajax({
-    url: serverUrl+"/"+schemaName,
-  }).done(function(jsonSchema) {
-    $("#json-editor").data('type', schemaName);
-    $("#json-editor").html('');
-    jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"),
-      {
-        schema: schemas[schemaName]
-      }
-    );
-    $("#json-editor-container").show().animateCss('zoomIn');
-  });
-}
-
-function displayCard(uri) {
-  $("#json-editor-container .messages").html('');
-  $("#json-editor").removeData('id');
-  $("#json-editor").removeData('type');
-  $("#json-editor-buttons .btn-delete").attr("disabled", "disabled");
-  $("#json-editor-container .messages").html();
-  var schemaName = uri.split("/")[uri.split("/").length-2];
-  $.ajax({
-    url: uri
-  }).done(function(entity) {
-    $("#json-editor").html('');
-    $("#json-editor").data('type', schemaName);
-    $("#json-editor").data('id', entity['@id']);
-    $("#json-editor-buttons .btn-delete").removeAttr("disabled");
-    jsonEditorInstance = new JSONEditor(document.getElementById("json-editor"),
-      {
-        schema: schemas[schemaName],
-        startval: entity
-      }
-    );
-    $("#json-editor-container").show().animateCss('zoomIn');
-  });
-}
-
-function saveCard() {
-  $("#json-editor-container .messages").html('');
-
-  var schema = $("#json-editor").data('type');
-  var uri = $("#json-editor").data('id');
+function displayCard(uri, schemaName) {
+  var cardDialogOptions = {
+    title: schemaName,
+    appendTo: "#cards",
+    minWidth: 500,
+    // Overriding jQuery UI close behaviour because it's buggy :(
+    // We use opacity *as well as visibility* to better override CSS transitions
+    // on elements that can otherwise cause the card to disappear 'oddly'.
+    // Hiding and re-showing a card has the benifit that cards remember their
+    // last positions. A downside is a cards contents could be stale, but that
+    // can be easily addressed in a future update - and is something we'd 
+    // want to handle anyway with server side events in case a card is updated
+    // by someone else on another browser!
+    beforeClose: function(event, ui) {
+      console.log(this);
+      $(this).parents(".ui-dialog").css({visibility: 'hidden', opacity: 0, zIndex: 0});
+      
+      // Move focus to card with highest zIndex
+      var highestZIndex = 0;
+      var cardWithHighestZIndex = null;
+      $("#cards .ui-dialog").each(function() {
+        var zIndex = parseInt($(this).css("zIndex"), 10);
+        if (zIndex > highestZIndex) {
+          highestZIndex = zIndex;
+          cardWithHighestZIndex = this;
+        }
+      });
+      if (cardWithHighestZIndex)
+        $(cardWithHighestZIndex).focus();
+      
+      event.preventDefault();
+      return false;
+    }
+  };
+    
   if (uri) {
-    // Update
+    // Display existing card 
+
+    // If card with that URI is already displayed, bubble it up to the top
+    if ($('#cards .card[data-id="'+uri+'"]').length > 0) {
+      // Loop through all visible cards and get the current highest zIndex value
+      // Starting with z-Index of at least 10 to make sure it displays above 
+      // other elements in the same area, such as search results.
+      var highestZIndex = 10;
+      $("#cards .ui-dialog").each(function() {
+        var zIndex = parseInt($(this).css("zIndex"), 10);
+        if (zIndex > highestZIndex)
+          highestZIndex = zIndex;
+      });
+      $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility:  'visible', opacity: 1}).focus();
+      return; 
+    }
+
+    if (!schemaName)
+      schemaName = uri.split("/")[uri.split("/").length-2];
+
+    // Check we have a template for this schema type
+    if ($('script[data-template="'+schemaName+'"]').length == 0)
+      return alert("Error: No template defined for "+schemaName+" schema");
+    
+    $.ajax({
+      url: uri
+    }).done(function(entity) {
+
+      cardDialogOptions.title = schemaName;
+    
+      // Load template for card based on schema type
+      var template = $.templates('script[data-template="'+schemaName+'"]');
+      
+      // Populate template
+      var html = template.render(entity);
+  
+      // Create new container for card (inside parent) and inject html
+      var card = $('<div data-id="'+entity['@id']+'" data-schema="'+schemaName+'" class="card">'+html+'</div>');
+
+      cardDialogOptions.title = schemaName;
+      card.dialog(cardDialogOptions);
+    });
+  } else {
+    // Display new, blank card
+    
+    // Check we have a template for this schema type
+    if ($('script[data-template="'+schemaName+'"]').length == 0)
+      return alert("Error: No template defined for "+schemaName+" schema");
+  
+    // Load template for card based on schema type
+    var template = $.templates('script[data-template="'+schemaName+'"]');
+  
+    // Populate template
+    var html = template.render({});
+  
+    // Create new container for card (inside parent) and inject html
+    var card = $('<div data-schema="'+schemaName+'" class="card">'+html+'</div>');
+
+    cardDialogOptions.title = schemaName;
+    card.dialog(cardDialogOptions);
+  }
+}
+
+function saveCard(card) {
+  var schemaName =  $(card).parents(".card").attr('data-schema');
+  var uri =  $(card).parents(".card").attr('data-id');
+  
+  if (uri) {
+    // Update existing card
     $.ajax({
       type: 'PUT',
       url: uri,
-      data: jsonEditorInstance.getValue(),
+      data: $(card).parents('form').serializeObject(),
       headers: {
-        'x-api-key': apiKey
+        'x-api-key': gApiKey
       }
     })
     .done(function(entity) {
       previewCallback(uri, 'update');
       updateView(entity['@id']);
-      $("#json-editor-container .messages").html('<div class="alert alert-success"><i class="fa fa-fw fa-check"></i> Changes saved</div>');
     })
     .fail(function(err) {
       var message = err.message || "Unable to save changes";
-      $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
     });
   } else {
-    // Create
+    // Create new card
     $.ajax({
       type: 'POST',
-      url: serverUrl+"/"+schema,
-      data: jsonEditorInstance.getValue(),
+      url: gServerUrl+"/"+schemaName,
+      data: $(card).parents('form').serializeObject(),
       headers: {
-        'x-api-key': apiKey
+        'x-api-key': gApiKey
       }
     })
     .done(function(entity) {
-      $("#json-editor").data('id', entity['@id']);
-      $("#json-editor-buttons .btn-delete").removeAttr("disabled");
+      $(card).parents(".card").attr('data-id', entity['@id']);
       previewCallback(entity['@id'], 'create');
       updateView(entity['@id']);
-      $("#json-editor-container .messages").html('<div class="alert alert-success"><i class="fa fa-fw fa-check"></i> Card created</div>');
     })
     .fail(function(err) {
       var message = err.message || "Unable to create new card";
-      $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
     });
   }
 }
 
-function deleteCard() {
+function deleteCard(card) {
   if (confirm("Are you sure you want to delete this card?\n\nThis action cannot be undone.")) {
-    var schema = $("#json-editor").data('type');
-    var uri = $("#json-editor").data('id');
+    var uri =  $(card).parents(".card").attr('data-id');
+    
     if (!uri)
-      return;
+      return $(card).parents(".ui-dialog").css({visibility: 'hidden', opacity: 0, zIndex: 0});
+    
     $.ajax({
       type: 'DELETE',
       url: uri,
       headers: {
-        'x-api-key': apiKey
+        'x-api-key': gApiKey
       }
     })
     .done(function() {
       previewCallback(uri, 'delete');
-      // Custom animation style when deleting a card
-      hideCard(false);
-      updateView();
+      // @FIXME Should delete the card here but jQuery is buggy and incorrectly
+      // redraws other dialogs when you do remove elements, so fudging by just
+      // hiding elements for now.
+      $(card).parents(".ui-dialog").css({visibility: 'hidden', opacity: 0, zIndex: 0});
+      updateView(uri);
+      
+      // Move focus to card with highest zIndex
+      var highestZIndex = 0;
+      var cardWithHighestZIndex = null;
+      $("#cards .ui-dialog").each(function() {
+        var zIndex = parseInt($(this).css("zIndex"), 10);
+        if (zIndex > highestZIndex) {
+          highestZIndex = zIndex;
+          cardWithHighestZIndex = this;
+        }
+      });
+      if (cardWithHighestZIndex)
+        $(cardWithHighestZIndex).focus();
     })
     .fail(function(err) {
       var message = err.message || "Unable to delete card";
-      $("#json-editor-container .messages").html('<div class="alert alert-danger"><i class="fa fa-fw fa-exclamation-circle"></i> '+message+'</div>');
-    });
-  }
-}
-
-function hideCard(customAnimation) {
-  var animation = customAnimation || 'bounceOutUp';
-  if (animation === false) {
-    $("#json-editor-container").hide();
-    $("#json-editor").removeData('id');
-    $("#json-editor").removeData('type');
-    $("#json-editor-container .messages").html('');
-  } else {
-    $("#json-editor-container").animateCss(animation, function() {
-      $("#json-editor-container").hide();
-      $("#json-editor").removeData('id');
-      $("#json-editor").removeData('type');
-      $("#json-editor-container .messages").html('');
     });
   }
 }

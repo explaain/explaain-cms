@@ -1,0 +1,56 @@
+<div style="position: relative; display: inline-block; width: 75%; height: 100%; float: left; overflow: hidden;">
+  
+  <div style="position: absolute; top: 0px; left: 0px; width: 100%; padding: 10px; padding-left: 15px; background: #ddd; height: 55px; z-index: 6">
+    <div class="pull-left"><h1 class="title">Explaain CMS</h1></div>
+    <div id="newCardBtn" class="dropdown pull-right">
+      <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+        <i class="fa fa-lg fa-fw fa-plus-circle"></i> New …
+        <i class="fa fa-fw fa-caret-down"></i>
+      </button>
+      <ul class="dropdown-menu"></ul>
+    </div>
+    <button class="btn btn-default pull-right" style="margin-right: 10px;" type="button" onclick="promptForApiKey()">
+      <i class="fa fa-lg fa-fw fa-cog"></i> API Key
+    </button>
+  </div>
+    
+  <div style="position: absolute; left: 0; top: 65px; width: 350px; z-index: 4">
+    <form id="search">
+      <div class="input-group" style="background: #fff;">
+        <span class="input-group-addon" id="basic-addon1"><i class="fa fa-lg fa-search"></i></span>
+        <input type="text" name="search" class="form-control" placeholder="Search" />
+      </div>
+    </form>
+  </div>
+  <div id="searchResults" style="overflow: auto; position: absolute; top: 0; left: 0; padding-left: 10px; padding-top: 120px; z-index: 3"></div>
+  
+  <div id="cards" style="position: absolute; top: 0; left; 0; height: 100%; width: 100%; overflow: hidden;">
+      <!--
+      <div id="json-editor"></div>
+      <div class="messages"></div>
+      <div id="json-editor-buttons" style="text-align: right;">
+        <button onclick="deleteCard()" class="btn btn-danger btn-delete pull-left"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
+        <button onclick="hideCard()" class="btn btn-default"><i class="fa fa-lg fa-fw fa-ban"></i> Close</button>
+        <button onclick="saveCard()" class="btn btn-primary"><i class="fa fa-lg fa-fw fa-check"></i> Save</button>
+      </div>
+      -->
+  </div>
+  
+</div>
+<!-- Explaain App Preview -->
+<div style="display: inline-block; width: 25%; height: 100%; float: right;">
+  <iframe id="explaain" frameborder="0" style="height: 100%; width: 100%" src="//explaain-landing-swipe-across.herokuapp.com/demo/?editing=true&db=true"></iframe>
+</div>
+<!-- Templates -->
+<%- include partials/headline-card.ejs %>
+<%- include partials/detail-card.ejs %>
+<%- include partials/person-card.ejs %>
+<%- include partials/organization-card.ejs %>
+<%- include partials/event-card.ejs %>
+<%- include partials/place-card.ejs %>
+<!-- Scripts -->
+<script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<script src="js/jquery-ui.js"></script>
+<script src="js/jsrender.min.js"></script>
+<script src="js/main.js"></script>
