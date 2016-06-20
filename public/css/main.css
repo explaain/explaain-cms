@@ -18,7 +18,7 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
 }
 
 #cards .card {
-  max-height: 600px !important;
+  max-height: 500px !important;
   overflow: auto;
 }
 

@@ -202,7 +202,7 @@ function displayCard(uri, schemaName) {
 
     // Check we have a template for this schema type
     if ($('script[data-template="'+schemaName+'"]').length == 0)
-      return alert("Error: No template defined for "+schemaName+" schema");
+      return console.log("Display Card Error: No template defined for "+schemaName+" schema");
     
     $.ajax({
       url: uri
@@ -232,7 +232,7 @@ function displayCard(uri, schemaName) {
     
     // Check we have a template for this schema type
     if ($('script[data-template="'+schemaName+'"]').length == 0)
-      return alert("Error: No template defined for "+schemaName+" schema");
+      return console.log("Display New Card Error: No template defined for "+schemaName+" schema");
   
     // Load template for card based on schema type
     var template = $.templates('script[data-template="'+schemaName+'"]');
