@@ -131,7 +131,6 @@ function displayCard(uri, schemaName) {
     // want to handle anyway with server side events in case a card is updated
     // by someone else on another browser!
     beforeClose: function(event, ui) {
-      console.log(this);
       $(this).parents(".ui-dialog").css({visibility: 'hidden', opacity: 0, zIndex: 0});
       
       // Move focus to card with highest zIndex
@@ -370,7 +369,7 @@ function updateView(id) {
 function initaliseTextarea(textarea) {
   var defaultValue = htmlDecode(textarea.text());
   textarea.mentionsInput({
-    elastic: false,
+    elastic: true,
     showAvatars: false,
     defaultValue: defaultValue,
     onDataRequest: function(mode, query, callback) {
