@@ -155,6 +155,9 @@ function displayCard(uri, schemaName) {
   if (uri) {
     // Display existing card 
 
+    if (!schemaName)
+      schemaName = uri.split("/")[uri.split("/").length-2];
+
     // If card with that URI is already displayed, bubble it up to the top
     if ($('#cards .card[data-id="'+uri+'"]').length > 0) {
       // Loop through all visible cards and get the current highest zIndex value
@@ -166,12 +169,36 @@ function displayCard(uri, schemaName) {
         if (zIndex > highestZIndex)
           highestZIndex = zIndex;
       });
-      $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility:  'visible', opacity: 1}).focus();
+      
+      // Check if card is visible or not
+      if ($('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css('visibility') == 'hidden') {
+        // If card is hidden, get the latest value of it's contents before making it visible.
+        $.ajax({
+          url: uri
+        }).done(function(entity) {
+          // Load template for card based on schema type
+          var template = $.templates('script[data-template="'+schemaName+'"]');
+      
+          entity.description = htmlEncode(entity.description);
+          
+          // Populate template
+          var html = template.render(entity);
+          
+          // Inject HTML into container
+          $('#cards .card[data-id="'+uri+'"]').html(html);
+
+          // Reinitalize textara
+          initaliseTextarea($('textarea.mention', $('#cards .card[data-id="'+uri+'"]')));
+
+          // Display card
+          $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility: 'visible', opacity: 1}).focus();
+        });
+      } else {
+        // If the card is already visible, just display it (without updating contents)
+        $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility: 'visible', opacity: 1}).focus();
+      }
       return; 
     }
-
-    if (!schemaName)
-      schemaName = uri.split("/")[uri.split("/").length-2];
 
     // Check we have a template for this schema type
     if ($('script[data-template="'+schemaName+'"]').length == 0)
@@ -185,7 +212,9 @@ function displayCard(uri, schemaName) {
     
       // Load template for card based on schema type
       var template = $.templates('script[data-template="'+schemaName+'"]');
-      
+
+      entity.description = htmlEncode(entity.description);
+
       // Populate template
       var html = template.render(entity);
   
@@ -194,6 +223,8 @@ function displayCard(uri, schemaName) {
 
       cardDialogOptions.title = schemaName;
       card.dialog(cardDialogOptions);
+      
+      initaliseTextarea($('textarea.mention', card));
     });
   } else {
     // Display new, blank card
@@ -204,7 +235,7 @@ function displayCard(uri, schemaName) {
   
     // Load template for card based on schema type
     var template = $.templates('script[data-template="'+schemaName+'"]');
-  
+    
     // Populate template
     var html = template.render({});
   
@@ -213,6 +244,7 @@ function displayCard(uri, schemaName) {
 
     cardDialogOptions.title = schemaName;
     card.dialog(cardDialogOptions);
+    initaliseTextarea($('textarea.mention', card));
   }
 }
 
@@ -222,38 +254,48 @@ function saveCard(card) {
   
   if (uri) {
     // Update existing card
-    $.ajax({
-      type: 'PUT',
-      url: uri,
-      data: $(card).parents('form').serializeObject(),
-      headers: {
-        'x-api-key': gApiKey
-      }
-    })
-    .done(function(entity) {
-      previewCallback(uri, 'update');
-      updateView(entity['@id']);
-    })
-    .fail(function(err) {
-      var message = err.message || "Unable to save changes";
+    var formData = $(card).parents('form').serializeObject();
+      $('textarea.mention', $(card).parents('form')).mentionsInput('val', function(markdown) {
+      if (markdown && markdown != "")
+        formData.description = markdown.replace(/##/g, '#');
+      $.ajax({
+        type: 'PUT',
+        url: uri,
+        data: formData,
+        headers: {
+          'x-api-key': gApiKey
+        }
+      })
+      .done(function(entity) {
+        previewCallback(uri, 'update');
+        updateView(entity['@id']);
+      })
+      .fail(function(err) {
+        var message = err.message || "Unable to save changes";
+      });
     });
   } else {
     // Create new card
-    $.ajax({
-      type: 'POST',
-      url: gServerUrl+"/"+schemaName,
-      data: $(card).parents('form').serializeObject(),
-      headers: {
-        'x-api-key': gApiKey
-      }
-    })
-    .done(function(entity) {
-      $(card).parents(".card").attr('data-id', entity['@id']);
-      previewCallback(entity['@id'], 'create');
-      updateView(entity['@id']);
-    })
-    .fail(function(err) {
-      var message = err.message || "Unable to create new card";
+    var formData = $(card).parents('form').serializeObject();
+      $('textarea.mention', $(card).parents('form')).mentionsInput('val', function(markdown) {
+      if (markdown && markdown != "")
+        formData.description = markdown;
+      $.ajax({
+        type: 'POST',
+        url: gServerUrl+"/"+schemaName,
+        data: formData,
+        headers: {
+          'x-api-key': gApiKey
+        }
+      })
+      .done(function(entity) {
+        $(card).parents(".card").attr('data-id', entity['@id']);
+        previewCallback(entity['@id'], 'create');
+        updateView(entity['@id']);
+      })
+      .fail(function(err) {
+        var message = err.message || "Unable to create new card";
+      });
     });
   }
 }
@@ -323,4 +365,36 @@ function readCookie(cookieName) {
 function updateView(id) {
   if ($("#searchResults").html() != "")
     $("#search").submit();
+}
+
+function initaliseTextarea(textarea) {
+  var defaultValue = htmlDecode(textarea.text());
+  textarea.mentionsInput({
+    elastic: false,
+    showAvatars: false,
+    defaultValue: defaultValue,
+    onDataRequest: function(mode, query, callback) {
+      // @FIXME: Can currently only link to "Detail" schemas; am going to create
+      // endpoint in the API to cope with searching across multiple collections.
+      $.ajax({
+        url: gServerUrl+"/Detail/search?q="+encodeURIComponent(query),
+      }).done(function(results) {
+        var suggestions = results;
+        suggestions.forEach(function(suggestion) {
+          suggestion.id = suggestion['@id'];
+          suggestion.type = 'link';
+        });
+        suggestions = _.filter(suggestions, function(suggestion) { return suggestion.name.toLowerCase().indexOf(query.toLowerCase()) > -1 });
+        callback.call(this, suggestions);
+      });
+    }
+  });
+}
+
+function htmlEncode(value){
+  return $('<div/>').text(value).html();
+}
+
+function htmlDecode(value){
+  return $('<div/>').html(value).text();
 }

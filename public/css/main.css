@@ -50,14 +50,20 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
   border: transparent;
   color: transparent;
   background: transparent;
-  padding: 2px 5px;
+  padding: 0;
   border-radius: 5px;
+  width: 25px;
+  height: 25px;
   float: right;
   font-weight: bold;
+  outline: none;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 #cards .ui-dialog .ui-dialog-titlebar button::after {
-  display: inline-block;
+  display: block;
   font: normal normal normal 14px/1 FontAwesome;
   font-size: inherit;
   text-rendering: auto;
@@ -65,6 +71,9 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
   content: "\f00d";
   color: #888;
   font-size: 16px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
 
 .btn {
@@ -72,8 +81,19 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
   box-shadow: none !important;
   border-radius: 0;
   font-weight: bold;
+  outline: none !important;
 }
 
+.mentions,
 textarea {
   min-height: 100px;
+  font-size: 16px;
+  line-height: 1.846;
+  font-family: sans-serif;
+  font-weight: normal;
+  letter-spacing: 0.1px;
+}
+
+.form-control {
+  margin-bottom: 10px;
 }
