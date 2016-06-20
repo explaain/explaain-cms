@@ -86,7 +86,6 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
 
 .mentions,
 textarea {
-  min-height: 100px;
   font-size: 16px;
   line-height: 1.846;
   font-family: sans-serif;
@@ -94,6 +93,11 @@ textarea {
   letter-spacing: 0.1px;
 }
 
-.form-control {
+input.form-control,
+textarea.form-control {
   margin-bottom: 10px;
+}
+
+label {
+  color: #aaa;
 }

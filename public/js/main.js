@@ -1,7 +1,8 @@
 var gServerUrl = "https://explaain-api-develop.herokuapp.com";
 var gApiKey = readCookie("apiKey");
 var schemas = {};
-var previewCallback = function(id, action) {
+
+var sendMessageToPreviewFrame = function(id, action) {
   try {
     // Post message to the preview pane to let it now saving worked
     if (window.frames['explaain'].postMessage) {
@@ -247,7 +248,7 @@ function displayCard(uri, schemaName) {
   }
 }
 
-function saveCard(card) {
+function saveCard(card, callback) {
   var schemaName =  $(card).parents(".card").attr('data-schema');
   var uri =  $(card).parents(".card").attr('data-id');
   
@@ -266,11 +267,15 @@ function saveCard(card) {
         }
       })
       .done(function(entity) {
-        previewCallback(uri, 'update');
+        sendMessageToPreviewFrame(uri, 'update');
         updateView(entity['@id']);
+        if (callback)
+          callback(null, entity)
       })
       .fail(function(err) {
         var message = err.message || "Unable to save changes";
+        if (callback)
+          callback(message, entity)
       });
     });
   } else {
@@ -289,11 +294,15 @@ function saveCard(card) {
       })
       .done(function(entity) {
         $(card).parents(".card").attr('data-id', entity['@id']);
-        previewCallback(entity['@id'], 'create');
+        sendMessageToPreviewFrame(entity['@id'], 'create');
         updateView(entity['@id']);
+        if (callback)
+          callback(null, entity)
       })
       .fail(function(err) {
         var message = err.message || "Unable to create new card";
+        if (callback)
+          callback(message, entity)
       });
     });
   }
@@ -314,7 +323,7 @@ function deleteCard(card) {
       }
     })
     .done(function() {
-      previewCallback(uri, 'delete');
+      sendMessageToPreviewFrame(uri, 'delete');
       // @FIXME Should delete the card here but jQuery is buggy and incorrectly
       // redraws other dialogs when you do remove elements, so fudging by just
       // hiding elements for now.
@@ -337,6 +346,18 @@ function deleteCard(card) {
     .fail(function(err) {
       var message = err.message || "Unable to delete card";
     });
+  }
+}
+
+function previewCard(card) {
+  var uri =  $(card).parents(".card").attr('data-id');
+  if (!uri) {
+    // If no URI, save the card (to generate one) and then preview it
+    saveCard(card, function(err, entity) {
+      sendMessageToPreviewFrame(entity['@id'], 'preview');
+    });
+  } else {
+    sendMessageToPreviewFrame(entity['@id'], 'preview');
   }
 }
 
@@ -381,7 +402,7 @@ function initaliseTextarea(textarea) {
         var suggestions = results;
         suggestions.forEach(function(suggestion) {
           suggestion.id = suggestion['@id'];
-          suggestion.type = 'link';
+          suggestion.type = suggestion['@id'].split("/")[suggestion['@id'].split("/").length-2];
         });
         suggestions = _.filter(suggestions, function(suggestion) { return suggestion.name.toLowerCase().indexOf(query.toLowerCase()) > -1 });
         callback.call(this, suggestions);

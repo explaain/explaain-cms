@@ -1,6 +1,6 @@
 {
   "name": "explaain-cms",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "The CMS for Explaain",
   "engines": {
     "node": "5.9.1"
