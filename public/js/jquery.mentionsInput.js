@@ -21,6 +21,7 @@
         showAvatars   : true, //Show the avatars
         elastic       : true, //Grow the textarea automatically
         defaultValue  : '',
+        onInput       : function() {},
         onCaret       : false,
         classes       : {
             autoCompleteItemActive : "active" //Classes to apply in each item
@@ -318,6 +319,9 @@
                 currentDataQuery = utils.rtrim(currentDataQuery); //Deletes the whitespaces
                 _.defer(_.bind(doSearch, this, currentDataQuery)); //Invoking the function doSearch ( Bind the function to this)
             }
+            
+            if (settings.onInput)
+              settings.onInput(this);
         }
 
         //Takes the keypress event

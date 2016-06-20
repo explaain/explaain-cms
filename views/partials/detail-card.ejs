@@ -1,6 +1,9 @@
 <script data-template="Detail" type="text/x-jsrender">
   <form autocomplete="off">
     <div class="from-group">
+      <input name="id" class="input-sm form-control" disabled="disabled" value="{{:id}}"/>
+    </div>
+    <div class="from-group">
       <label>Name</label>
       <input type="text" class="form-control" name="name" value="{{:name}}" />
     </div>
@@ -12,6 +15,6 @@
       <label><i class="fa fa-fw fa-image"></i> Image URL</label>
       <input type="text" class="form-control" name="image" value="{{:image}}" />
     </div>
-    <%- include card-buttons.ejs %>
+    <%- include card-toolbar.ejs %>
   </form>
 </script>

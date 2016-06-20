@@ -17,6 +17,11 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
   font-weight: bold;
 }
 
+#cards .card {
+  max-height: 600px !important;
+  overflow: auto;
+}
+
 #cards .ui-dialog {
   background: #fff;
   display: none;
@@ -76,6 +81,10 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
   right: 5px;
 }
 
+#searchResults p {
+  margin-bottom: 0;
+}
+
 .btn {
   min-height: 34px;
   box-shadow: none !important;
@@ -91,6 +100,7 @@ textarea {
   font-family: sans-serif;
   font-weight: normal;
   letter-spacing: 0.1px;
+  min-height: 100px;
 }
 
 input.form-control,

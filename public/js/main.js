@@ -103,7 +103,7 @@ $(function() {
     });
     return o;
   };
-  
+
 });
 
 /**
@@ -171,32 +171,32 @@ function displayCard(uri, schemaName) {
       });
       
       // Check if card is visible or not
-      if ($('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css('visibility') == 'hidden') {
-        // If card is hidden, get the latest value of it's contents before making it visible.
-        $.ajax({
-          url: uri
-        }).done(function(entity) {
-          // Load template for card based on schema type
-          var template = $.templates('script[data-template="'+schemaName+'"]');
-      
-          entity.description = htmlEncode(entity.description);
-          
-          // Populate template
-          var html = template.render(entity);
-          
-          // Inject HTML into container
-          $('#cards .card[data-id="'+uri+'"]').html(html);
+      //if ($('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css('visibility') == 'hidden') {
+      //}
+      // Get the latest value of it's contents before making it visible.
+      $.ajax({
+        url: uri
+      }).done(function(entity) {
+        // Load template for card based on schema type
+        var template = $.templates('script[data-template="'+schemaName+'"]');
+    
+        entity.id = entity['@id'];
+        entity.links = (entity.links) ? entity.links.join(',') : [];
+        entity.description = htmlEncode(entity.description.replace(/^\s+|\s+$/g, ''));
+        
+        // Populate template
+        var html = template.render(entity);
+        
+        // Inject HTML into container
+        $('#cards .card[data-id="'+uri+'"]').html(html);
 
-          // Reinitalize textara
-          initaliseTextarea($('textarea.mention', $('#cards .card[data-id="'+uri+'"]')));
-
-          // Display card
-          $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility: 'visible', opacity: 1}).focus();
-        });
-      } else {
-        // If the card is already visible, just display it (without updating contents)
+        // Reinitalize textara
+        initaliseTextarea($('textarea.mention', $('#cards .card[data-id="'+uri+'"]')));
+        
+        // Display card
         $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility: 'visible', opacity: 1}).focus();
-      }
+      });
+
       return; 
     }
 
@@ -213,6 +213,8 @@ function displayCard(uri, schemaName) {
       // Load template for card based on schema type
       var template = $.templates('script[data-template="'+schemaName+'"]');
 
+      entity.id = entity['@id'];
+      entity.links = (entity.links) ? entity.links.join(',') : [];
       entity.description = htmlEncode(entity.description);
 
       // Populate template
@@ -221,7 +223,6 @@ function displayCard(uri, schemaName) {
       // Create new container for card (inside parent) and inject html
       var card = $('<div data-id="'+entity['@id']+'" data-schema="'+schemaName+'" class="card">'+html+'</div>');
 
-      cardDialogOptions.title = schemaName;
       card.dialog(cardDialogOptions);
       
       initaliseTextarea($('textarea.mention', card));
@@ -237,7 +238,7 @@ function displayCard(uri, schemaName) {
     var template = $.templates('script[data-template="'+schemaName+'"]');
     
     // Populate template
-    var html = template.render({});
+    var html = template.render({id: "No ID assigned yet"});
   
     // Create new container for card (inside parent) and inject html
     var card = $('<div data-schema="'+schemaName+'" class="card">'+html+'</div>');
@@ -255,56 +256,58 @@ function saveCard(card, callback) {
   if (uri) {
     // Update existing card
     var formData = $(card).parents('form').serializeObject();
-      $('textarea.mention', $(card).parents('form')).mentionsInput('val', function(markdown) {
-      if (markdown && markdown != "")
-        formData.description = markdown.replace(/##/g, '#');
-      $.ajax({
-        type: 'PUT',
-        url: uri,
-        data: formData,
-        headers: {
-          'x-api-key': gApiKey
-        }
-      })
-      .done(function(entity) {
-        sendMessageToPreviewFrame(uri, 'update');
-        updateView(entity['@id']);
-        if (callback)
-          callback(null, entity)
-      })
-      .fail(function(err) {
-        var message = err.message || "Unable to save changes";
-        if (callback)
-          callback(message, entity)
-      });
+    formData.links = formData.links.split(',');
+    $.ajax({
+      type: 'PUT',
+      url: uri,
+      data: formData,
+      headers: {
+        'x-api-key': gApiKey
+      }
+    })
+    .done(function(entity) {
+      sendMessageToPreviewFrame(uri, 'update');
+      updateView(entity['@id']);
+      if (callback)
+        callback(null, entity)
+    })
+    .fail(function(err) {
+      console.log(err);
+      var message = err.message || "Unable to save changes";
+      if (callback)
+        callback(message, entity)
     });
+
   } else {
     // Create new card
     var formData = $(card).parents('form').serializeObject();
-      $('textarea.mention', $(card).parents('form')).mentionsInput('val', function(markdown) {
-      if (markdown && markdown != "")
-        formData.description = markdown;
-      $.ajax({
-        type: 'POST',
-        url: gServerUrl+"/"+schemaName,
-        data: formData,
-        headers: {
-          'x-api-key': gApiKey
-        }
-      })
-      .done(function(entity) {
-        $(card).parents(".card").attr('data-id', entity['@id']);
-        sendMessageToPreviewFrame(entity['@id'], 'create');
-        updateView(entity['@id']);
-        if (callback)
-          callback(null, entity)
-      })
-      .fail(function(err) {
-        var message = err.message || "Unable to create new card";
-        if (callback)
-          callback(message, entity)
-      });
+    formData.links = formData.links.split(',');
+    $.ajax({
+      type: 'POST',
+      url: gServerUrl+"/"+schemaName,
+      data: formData,
+      headers: {
+        'x-api-key': gApiKey
+      }
+    })
+    .done(function(entity) {
+      $(card).parents(".card").attr('data-id', entity['@id']);
+      $('input[name="id"]', $(card)).val(entity['@id']);
+      
+      displayCard(entity['@id']);
+
+      sendMessageToPreviewFrame(entity['@id'], 'create');
+      updateView(entity['@id']);
+      if (callback)
+        callback(null, entity)
+    })
+    .fail(function(err) {
+      console.log(err);
+      var message = err.message || "Unable to create new card";
+      if (callback)
+        callback(message, entity)
     });
+
   }
 }
 
@@ -388,11 +391,36 @@ function updateView(id) {
 }
 
 function initaliseTextarea(textarea) {
+  
+  textarea.highlightTextarea({
+    words: ['\\[(.+?)\\]'],
+    color: "#D5EDFF"
+  });
+
+  textarea.on('input propertychange', function() {
+    updateLinksInTextarea( $(this) );
+  });
+
+  updateLinksInTextarea(textarea);
+  
+  /*
   var defaultValue = htmlDecode(textarea.text());
   textarea.mentionsInput({
     elastic: true,
     showAvatars: false,
     defaultValue: defaultValue,
+    onInput: function(textarea) {
+      $(textarea).mentionsInput('getMentions', function(mentions) {
+        var html = ''
+        console.log("X")
+        console.log(mentions);
+        mentions.forEach(function(mention) {
+          html += '<p><input type="form-control">'+mention.value+'</strong><br>'+mention.id+'</p>';
+        });
+        console.log(html)
+        $('.links',  $(textarea).closest('form')).html(html);
+      });
+    },
     onDataRequest: function(mode, query, callback) {
       // @FIXME: Can currently only link to "Detail" schemas; am going to create
       // endpoint in the API to cope with searching across multiple collections.
@@ -409,6 +437,37 @@ function initaliseTextarea(textarea) {
       });
     }
   });
+  */
+}
+
+function updateLinksInTextarea(textarea) {
+  var html = '';
+  var matches = textarea.val().match(/\[(.+?)\]/g);
+  if (matches) {
+    matches.forEach(function(text, index) {
+      var links = $('input[name="links"]', $(textarea).closest('form')).val().split(',');
+      console.log(links);
+      console.log(index);
+      
+      var link = (links[index]) ? links[index] : '';
+      html += '<div class="form-group">'
+             +'<label xclass="label"><i class="fa fa-fw fa-tag"></i> "'+text.replace(/[\[\]]/g, '')+'"</label>'
+             +'<input type="text" class="form-control" placeholder="http://" value="'+link+'"/>'
+             +'</div>';
+    });
+  }
+  $('.links',  $(textarea).closest('form')).html(html);
+
+  $('input[type="text"]',$(textarea).closest('form')).on('input propertychange', function() {
+    var links = [];
+    $('.links input[type="text"]',$(textarea).closest('form')).each(function() {
+      if ($(this).val().trim() != "")
+        links.push($(this).val().trim());
+    });
+    $('input[name="links"]', $(textarea).closest('form')).val(links.join(','));
+  });
+  
+  $(textarea).closest(".ui-dialog").trigger("resize");
 }
 
 function htmlEncode(value){
