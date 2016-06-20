@@ -1,5 +1,8 @@
 <input type="hidden" name="links" value="{{:links}}"/>
-<div class="links"></div>
+<div class="clearfix">
+  <button type="button" onclick="toggleLinks(this)" class="btn btn-default btn-sm pull-right"><i class="fa fa-fw fa-lg fa-link"></i> <span>Edit links</span></button>
+</div>
+<div class="links hide"></div>
 <div style="margin: 20px 0 0 0; text-align: right;">
   <button type="button" onclick="deleteCard(this)" class="btn btn-danger btn-delete pull-left"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
   <button type="button" onclick="previewCard(this)" class="btn btn-default"><i class="fa fa-lg fa-fw fa-eye"></i> Preview</button>

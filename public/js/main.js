@@ -446,9 +446,6 @@ function updateLinksInTextarea(textarea) {
   if (matches) {
     matches.forEach(function(text, index) {
       var links = $('input[name="links"]', $(textarea).closest('form')).val().split(',');
-      console.log(links);
-      console.log(index);
-      
       var link = (links[index]) ? links[index] : '';
       html += '<div class="form-group">'
              +'<label xclass="label"><i class="fa fa-fw fa-tag"></i> "'+text.replace(/[\[\]]/g, '')+'"</label>'
@@ -456,6 +453,9 @@ function updateLinksInTextarea(textarea) {
              +'</div>';
     });
   }
+  if (html == '')
+    html = '<p class="text-muted">No links in description</p>';
+  
   $('.links',  $(textarea).closest('form')).html(html);
 
   $('input[type="text"]',$(textarea).closest('form')).on('input propertychange', function() {
@@ -468,6 +468,17 @@ function updateLinksInTextarea(textarea) {
   });
   
   $(textarea).closest(".ui-dialog").trigger("resize");
+}
+
+function toggleLinks(button) {
+  if ($('span', button).text() == "Edit links") {
+    $('span', button).text("Hide links");
+    $('.links', $(button).closest('form')).removeClass("hide").show();
+  } else {
+    $('span', button).text("Edit links");
+    $('.links', $(button).closest('form')).hide();
+  }
+  $(button).closest(".ui-dialog").trigger("resize");
 }
 
 function htmlEncode(value){
