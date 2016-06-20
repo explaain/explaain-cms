@@ -103,6 +103,23 @@ $(function() {
     });
     return o;
   };
+  
+  /*
+  $.ajax({
+    url: "https://explaain-api-develop.herokuapp.com/Person/5707d48b40dd1811005673d8"
+  }).done(function(entity) {
+    console.log(entity.description);
+    var i = 0;
+    entity.description = entity.description.replace(/\[(.+?)\]/g, function($1) {
+      var linkText = $1.replace(/[\[\]]/g, '');
+      var href = (entity.links && entity.links[i]) ? entity.links[i] : '';
+      var link = '<a href="'+href+'">'+linkText+'</a>';
+      i++;
+      return link;
+    });
+    console.log(entity.description);
+  });
+  */
 
 });
 
@@ -360,7 +377,7 @@ function previewCard(card) {
       sendMessageToPreviewFrame(entity['@id'], 'preview');
     });
   } else {
-    sendMessageToPreviewFrame(entity['@id'], 'preview');
+    sendMessageToPreviewFrame(uri, 'preview');
   }
 }
 
@@ -466,8 +483,7 @@ function updateLinksInTextarea(textarea) {
     });
     $('input[name="links"]', $(textarea).closest('form')).val(links.join(','));
   });
-  
-  $(textarea).closest(".ui-dialog").trigger("resize");
+  $(textarea).parent(".ui-dialog,.ui-dialog-content").trigger("resize");
 }
 
 function toggleLinks(button) {
@@ -478,7 +494,7 @@ function toggleLinks(button) {
     $('span', button).text("Edit links");
     $('.links', $(button).closest('form')).hide();
   }
-  $(button).closest(".ui-dialog").trigger("resize");
+  $(button).parent(".ui-dialog,.ui-dialog-content").trigger("resize");
 }
 
 function htmlEncode(value){
