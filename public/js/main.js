@@ -106,7 +106,7 @@ $(function() {
   
   var handle = ally.style.focusWithin();
 
-  showCard("https://explaain-api-develop.herokuapp.com/Detail/5786354064e97c11008ad9e7")
+  //showCard("https://explaain-api-develop.herokuapp.com/Detail/5786354064e97c11008ad9e7")
 });
 
 /**
