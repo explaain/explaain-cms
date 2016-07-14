@@ -37,7 +37,7 @@ $(function() {
         
         // If we have a template for this schema add it to the New Card dropdown
         if ($('script[data-template="'+schemaName+'"]').length != 0)
-          $("#newCardBtn .dropdown-menu").append('<li><a href="#" onclick="displayCard(null, \''+schemaName+'\')">'+schemaName+'</a></li>');
+          $("#newCardBtn .dropdown-menu").append('<li><a href="#" onclick="showCard(null, \''+schemaName+'\')">'+schemaName+'</a></li>');
         
         schemas[schemaName] = jsonSchema;
       });
@@ -46,7 +46,7 @@ $(function() {
 
   window.addEventListener('message', function(event) {
     if (event.data.action = "edit")
-      return displayCard(event.data.id);
+      return showCard(event.data.id);
   }, false);
   
   $("#search").submit(function(e) {
@@ -65,7 +65,7 @@ $(function() {
         searchesReturned++;
         results.forEach(function(result) {
           var type = result['@id'].split("/")[result['@id'].split("/").length-2];
-          $("#searchResults").append('<p><button class="btn btn-default" style="text-align: left" onclick="displayCard(\''+result['@id']+'\')"><strong>'+(result.name || "(Untitled)")+'</strong> <span class="text-muted">('+type+')</span></button></p>');
+          $("#searchResults").append('<p><button class="btn btn-default" style="text-align: left" onclick="showCard(\''+result['@id']+'\')"><strong>'+(result.name || "(Untitled)")+'</strong> <span class="text-muted">('+type+')</span></button></p>');
           resultsReturned++;
         });
         if (searchesReturned == Object.keys(schemas).length && resultsReturned == 0)
@@ -104,23 +104,9 @@ $(function() {
     return o;
   };
   
-  /*
-  $.ajax({
-    url: "https://explaain-api-develop.herokuapp.com/Person/5707d48b40dd1811005673d8"
-  }).done(function(entity) {
-    console.log(entity.description);
-    var i = 0;
-    entity.description = entity.description.replace(/\[(.+?)\]/g, function($1) {
-      var linkText = $1.replace(/[\[\]]/g, '');
-      var href = (entity.links && entity.links[i]) ? entity.links[i] : '';
-      var link = '<a href="'+href+'">'+linkText+'</a>';
-      i++;
-      return link;
-    });
-    console.log(entity.description);
-  });
-  */
+  var handle = ally.style.focusWithin();
 
+  //showCard("https://explaain-api-develop.herokuapp.com/Detail/5786354064e97c11008ad9e7")
 });
 
 /**
@@ -135,9 +121,9 @@ function promptForApiKey() {
   saveCookie("apiKey", newApiKey);
 }
 
-function displayCard(uri, schemaName) {
+function showCard(uri, schemaName) {
   var cardDialogOptions = {
-    title: schemaName,
+    title: schemaName+" Card",
     appendTo: "#cards",
     minWidth: 500,
     // Overriding jQuery UI close behaviour because it's buggy :(
@@ -199,7 +185,7 @@ function displayCard(uri, schemaName) {
     
         entity.id = entity['@id'];
         entity.links = (entity.links) ? entity.links.join(',') : [];
-        entity.description = htmlEncode(entity.description.replace(/^\s+|\s+$/g, ''));
+        entity.description = marked(entity.description);
         
         // Populate template
         var html = template.render(entity);
@@ -208,7 +194,7 @@ function displayCard(uri, schemaName) {
         $('#cards .card[data-id="'+uri+'"]').html(html);
 
         // Reinitalize textara
-        initaliseTextarea($('textarea.mention', $('#cards .card[data-id="'+uri+'"]')));
+        initaliseTextarea($('.textarea', $('#cards .card[data-id="'+uri+'"]')));
         
         // Display card
         $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility: 'visible', opacity: 1}).focus();
@@ -225,14 +211,14 @@ function displayCard(uri, schemaName) {
       url: uri
     }).done(function(entity) {
 
-      cardDialogOptions.title = schemaName;
+      cardDialogOptions.title = schemaName+" Card";
     
       // Load template for card based on schema type
       var template = $.templates('script[data-template="'+schemaName+'"]');
 
       entity.id = entity['@id'];
       entity.links = (entity.links) ? entity.links.join(',') : [];
-      entity.description = htmlEncode(entity.description);
+      entity.description = marked(entity.description);
 
       // Populate template
       var html = template.render(entity);
@@ -242,7 +228,7 @@ function displayCard(uri, schemaName) {
 
       card.dialog(cardDialogOptions);
       
-      initaliseTextarea($('textarea.mention', card));
+      initaliseTextarea($('.textarea', card));
     });
   } else {
     // Display new, blank card
@@ -260,9 +246,9 @@ function displayCard(uri, schemaName) {
     // Create new container for card (inside parent) and inject html
     var card = $('<div data-schema="'+schemaName+'" class="card">'+html+'</div>');
 
-    cardDialogOptions.title = schemaName;
+    cardDialogOptions.title = schemaName+" Card";
     card.dialog(cardDialogOptions);
-    initaliseTextarea($('textarea.mention', card));
+    initaliseTextarea($('.textarea', card));
   }
 }
 
@@ -273,7 +259,15 @@ function saveCard(card, callback) {
   if (uri) {
     // Update existing card
     var formData = $(card).parents('form').serializeObject();
-    formData.links = formData.links.split(',');
+    
+    formData.description = $('.textarea[-data-name="description"]', $(card).parents('form')).html();
+    formData.description = toMarkdown(formData.description);
+    
+    formData.links = [];
+    $("a", $('.textarea[-data-name="description"]', $(card).parents('form'))).each(function(){
+      formData.links.push(this.href);
+    });
+    
     $.ajax({
       type: 'PUT',
       url: uri,
@@ -285,12 +279,13 @@ function saveCard(card, callback) {
     .done(function(entity) {
       sendMessageToPreviewFrame(uri, 'update');
       updateView(entity['@id']);
+      toast("Card saved", "success");
       if (callback)
         callback(null, entity)
     })
     .fail(function(err) {
-      console.log(err);
       var message = err.message || "Unable to save changes";
+      toast(message, "error");
       if (callback)
         callback(message, entity)
     });
@@ -298,7 +293,15 @@ function saveCard(card, callback) {
   } else {
     // Create new card
     var formData = $(card).parents('form').serializeObject();
-    formData.links = formData.links.split(',');
+    
+    formData.description = $('.textarea[-data-name="description"]', $(card).parents('form')).html();
+    formData.description = toMarkdown(formData.description);
+    
+    formData.links = [];
+    $("a", $('.textarea[-data-name="description"]', $(card).parents('form'))).each(function(){
+      formData.links.push(this.href);
+    });
+    
     $.ajax({
       type: 'POST',
       url: gServerUrl+"/"+schemaName,
@@ -311,16 +314,17 @@ function saveCard(card, callback) {
       $(card).parents(".card").attr('data-id', entity['@id']);
       $('input[name="id"]', $(card)).val(entity['@id']);
       
-      displayCard(entity['@id']);
+      showCard(entity['@id']);
 
       sendMessageToPreviewFrame(entity['@id'], 'create');
       updateView(entity['@id']);
+      toast("Card created", "success");
       if (callback)
         callback(null, entity)
     })
     .fail(function(err) {
-      console.log(err);
       var message = err.message || "Unable to create new card";
+      toast(message, "error");
       if (callback)
         callback(message, entity)
     });
@@ -362,9 +366,12 @@ function deleteCard(card) {
       });
       if (cardWithHighestZIndex)
         $(cardWithHighestZIndex).focus();
+      
+      toast("Card deleted", "success");
     })
     .fail(function(err) {
       var message = err.message || "Unable to delete card";
+      toast(message, "error");
     });
   }
 }
@@ -409,92 +416,70 @@ function updateView(id) {
 
 function initaliseTextarea(textarea) {
   
-  textarea.highlightTextarea({
-    words: ['\\[(.+?)\\]'],
-    color: "#D5EDFF"
+  textarea.toTextarea({
+    allowHTML: false,//allow HTML formatting with CTRL+b, CTRL+i, etc.
+    allowImg: false,//allow drag and drop images
+    singleLine: false,//make a single line so it will only expand horizontally
+    pastePlainText: true,//paste text without styling as source
+    placeholder: false//a placeholder when no text is entered. This can also be set by a placeholder="..." or data-placeholder="..." attribute
   });
-
-  textarea.on('input propertychange', function() {
-    updateLinksInTextarea( $(this) );
-  });
-
-  updateLinksInTextarea(textarea);
   
-  /*
-  var defaultValue = htmlDecode(textarea.text());
-  textarea.mentionsInput({
-    elastic: true,
-    showAvatars: false,
-    defaultValue: defaultValue,
-    onInput: function(textarea) {
-      $(textarea).mentionsInput('getMentions', function(mentions) {
-        var html = ''
-        console.log("X")
-        console.log(mentions);
-        mentions.forEach(function(mention) {
-          html += '<p><input type="form-control">'+mention.value+'</strong><br>'+mention.id+'</p>';
-        });
-        console.log(html)
-        $('.links',  $(textarea).closest('form')).html(html);
-      });
-    },
-    onDataRequest: function(mode, query, callback) {
-      // @FIXME: Can currently only link to "Detail" schemas; am going to create
-      // endpoint in the API to cope with searching across multiple collections.
-      $.ajax({
-        url: gServerUrl+"/Detail/search?q="+encodeURIComponent(query),
-      }).done(function(results) {
-        var suggestions = results;
-        suggestions.forEach(function(suggestion) {
-          suggestion.id = suggestion['@id'];
-          suggestion.type = suggestion['@id'].split("/")[suggestion['@id'].split("/").length-2];
-        });
-        suggestions = _.filter(suggestions, function(suggestion) { return suggestion.name.toLowerCase().indexOf(query.toLowerCase()) > -1 });
-        callback.call(this, suggestions);
-      });
+
+  // Detect if marked block in textarea was clicked
+  textarea.bind('click touch', function(e){
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    if (el.tagName == "A") {
+      showCard(el.href);
     }
   });
-  */
-}
 
-function updateLinksInTextarea(textarea) {
-  var html = '';
-  var matches = textarea.val().match(/\[(.+?)\]/g);
-  if (matches) {
-    matches.forEach(function(text, index) {
-      var links = $('input[name="links"]', $(textarea).closest('form')).val().split(',');
-      var link = (links[index]) ? links[index] : '';
-      html += '<div class="form-group">'
-             +'<label xclass="label"><i class="fa fa-fw fa-tag"></i> "'+text.replace(/[\[\]]/g, '')+'"</label>'
-             +'<input type="text" class="form-control" placeholder="http://" value="'+link+'"/>'
-             +'</div>';
-    });
-  }
-  if (html == '')
-    html = '<p class="text-muted">No links in description</p>';
-  
-  $('.links',  $(textarea).closest('form')).html(html);
+  // Detect if marked block in textarea was RIGHT clicked
+  textarea.bind('contextmenu', function(e){
+    e.preventDefault();
+    var selection = document.getSelection();
+    var range = selection.getRangeAt(0);
+    var selectedText = selection.toString()
 
-  $('input[type="text"]',$(textarea).closest('form')).on('input propertychange', function() {
-    var links = [];
-    $('.links input[type="text"]',$(textarea).closest('form')).each(function() {
-      if ($(this).val().trim() != "")
-        links.push($(this).val().trim());
-    });
-    $('input[name="links"]', $(textarea).closest('form')).val(links.join(','));
+    // Do nothing if no text selected
+    if (selectedText.length === 0)
+      return;
+    
+    var response;
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    if (el.tagName == "A") {
+      response = prompt('Edit URL', el.href);
+      response = response.trim();
+      if (response.length === 0) {
+        // If not URL then do nothing.
+        return false;
+        /*
+        // If no URL then delete link and replace with text
+        var parentNode = getSelectedParentNode(range);
+        parentNode.remove();
+        range.insertNode(document.createTextNode(selectedText));
+        */
+      } else {
+        // Update URL
+        var parentNode = getSelectedParentNode(range);
+        parentNode.href = response;
+      }
+    } else {
+      response = prompt('Add URL');
+      response = response.trim();
+
+      // If no URL, don't insert a link
+      if (response.length === 0)
+        return;
+      
+      range.deleteContents();
+      var a = document.createElement("a");
+      a.href = response;
+      a.innerText = selectedText;
+      range.insertNode(a);
+    }
+
   });
-  $(textarea).parent(".ui-dialog,.ui-dialog-content").trigger("resize");
-}
-
-function toggleLinks(button) {
-  if ($('span', button).text() == "Edit links") {
-    $('span', button).text("Hide links");
-    $('.links', $(button).closest('form')).removeClass("hide").show();
-  } else {
-    $('span', button).text("Edit links");
-    $('.links', $(button).closest('form')).hide();
-  }
-  $(button).parent(".ui-dialog,.ui-dialog-content").trigger("resize");
+  
 }
 
 function htmlEncode(value){
@@ -503,4 +488,50 @@ function htmlEncode(value){
 
 function htmlDecode(value){
   return $('<div/>').html(value).text();
+}
+
+function toast(message, type) {
+  toastr.options = {
+    "closeButton": false,
+    "debug": false,
+    "newestOnTop": false,
+    "progressBar": true,
+    "positionClass": "toast-bottom-left",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "1000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+  };
+
+  toastr[type](message);
+}
+
+
+function getSelectedParentNode(range) {
+  var selectedElement = null;
+  if (rangeSelectsSingleNode(range)) {
+      // Selection encompasses a single element
+      selectedElement = range.startContainer.childNodes[range.startOffset];
+  } else if (range.startContainer.nodeType === 3) {
+      // Selection range starts inside a text node, so get its parent
+      selectedElement = range.startContainer.parentNode;
+  } else {
+      // Selection starts inside an element
+      selectedElement = range.startContainer;
+  }
+  return selectedElement;
+}
+
+// http://stackoverflow.com/questions/15867542/range-object-get-selection-parent-node-chrome-vs-firefox
+function rangeSelectsSingleNode(range) {
+    var startNode = range.startContainer;
+    return startNode === range.endContainer &&
+           startNode.hasChildNodes() &&
+           range.endOffset === range.startOffset + 1;
 }

@@ -1,21 +1,17 @@
 <script data-template="Place" type="text/x-jsrender">
-  <form autocomplete="off" style="padding-top: 25px;">
-    <div class="input-group" style="background: #eee; position: absolute; top: 30px; left: 0">
-      <span class="input-group-addon" style="padding: 5px;"><i class="fa fa-link"></i></span>
-      <input name="id" class="form-control input-sm " disabled="disabled" value="{{:id}}"/>
-    </div>
+  <form autocomplete="off">
     <div class="from-group">
       <label>Name</label>
       <input type="text" class="form-control" name="name" value="{{:name}}" />
     </div>
     <div class="from-group">
       <label>Description</label>
-      <textarea name="description" class="form-control mention">{{:description}}</textarea>
+      <div -data-name="description" class="textarea">{{:description}}</div>
     </div>
     <div class="from-group">
       <label><i class="fa fa-fw fa-image"></i> Image URL</label>
       <input type="text" class="form-control" name="image" value="{{:image}}" />
     </div>
-    <%- include card-toolbar.ejs %>
+    <%- include card/footer.ejs %>
   </form>
 </script>
