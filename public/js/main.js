@@ -1,5 +1,6 @@
 var gServerUrl = "https://explaain-api-develop.herokuapp.com";
 var gApiKey = readCookie("apiKey");
+var gContextMenuTarget = null;
 var schemas = {};
 
 var sendMessageToPreviewFrame = function(id, action) {
@@ -49,6 +50,7 @@ $(function() {
       return showCard(event.data.id);
   }, false);
   
+  // Intercept the search box
   $("#search").submit(function(e) {
     e.preventDefault();
     
@@ -73,6 +75,15 @@ $(function() {
       });
     };
     return false;
+  });
+  
+  // Intercept the *context menu* search box
+  $('#contextmenu #add-link input[name="search"]').keyup(function(e) {
+    if (e.keyCode == 13) {
+      e.preventDefault();
+      suggestLinksInContextMenu();
+      return false;
+    }
   });
 
   $.fn.extend({
@@ -104,9 +115,20 @@ $(function() {
     return o;
   };
   
+  // Handle focusing cards when child element (e.g. input field) has focus
   var handle = ally.style.focusWithin();
 
-  //showCard("https://explaain-api-develop.herokuapp.com/Detail/5786354064e97c11008ad9e7")
+
+  $(document).click(function(event) { 
+    // Clicking anywhere outside of the context menu when it is visible
+    // should hide it.
+    if (!$(event.target).closest('#contextmenu').length)
+      if ($('#contextmenu').is(":visible"))
+        $('#contextmenu').hide();
+  })
+  
+  
+   showCard("https://explaain-api-develop.herokuapp.com/Detail/5786354064e97c11008ad9e7")
 });
 
 /**
@@ -265,7 +287,8 @@ function saveCard(card, callback) {
     
     formData.links = [];
     $("a", $('.textarea[-data-name="description"]', $(card).parents('form'))).each(function(){
-      formData.links.push(this.href);
+      if (formData.links.indexOf(this.href) == -1)
+        formData.links.push(this.href);
     });
     
     $.ajax({
@@ -299,7 +322,8 @@ function saveCard(card, callback) {
     
     formData.links = [];
     $("a", $('.textarea[-data-name="description"]', $(card).parents('form'))).each(function(){
-      formData.links.push(this.href);
+      if (formData.links.indexOf(this.href) == -1)
+        formData.links.push(this.href);
     });
     
     $.ajax({
@@ -447,37 +471,20 @@ function initaliseTextarea(textarea) {
     var response;
     var el = document.elementFromPoint(e.clientX, e.clientY);
     if (el.tagName == "A") {
-      response = prompt('Edit URL', el.href);
-      response = response.trim();
-      if (response.length === 0) {
-        // If not URL then do nothing.
-        return false;
-        /*
-        // If no URL then delete link and replace with text
-        var parentNode = getSelectedParentNode(range);
-        parentNode.remove();
-        range.insertNode(document.createTextNode(selectedText));
-        */
-      } else {
-        // Update URL
-        var parentNode = getSelectedParentNode(range);
-        parentNode.href = response;
-      }
-    } else {
-      response = prompt('Add URL');
-      response = response.trim();
 
-      // If no URL, don't insert a link
-      if (response.length === 0)
-        return;
-      
+      showContextMenu('edit-link', el);
+      clearSelection();
+      return;
+    } else {
       range.deleteContents();
       var a = document.createElement("a");
-      a.href = response;
+      a.href = "#";
       a.innerText = selectedText;
       range.insertNode(a);
+      
+      showContextMenu('add-link', a);
+      return;
     }
-
   });
   
 }
@@ -534,4 +541,80 @@ function rangeSelectsSingleNode(range) {
     return startNode === range.endContainer &&
            startNode.hasChildNodes() &&
            range.endOffset === range.startOffset + 1;
+}
+
+function showContextMenu(contextMenuId, target) {
+  
+  var viewportOffset = target.getBoundingClientRect();
+  x = viewportOffset.left;
+  y = viewportOffset.bottom;
+  
+  // Hide + reset menu
+  $("#contextmen").hide();
+  $("#contextmenu ul").hide();
+  $('#contextmenu #add-link input[type="text"]').val(target.innerText);
+  $("#contextmenu #add-link li:not(.search)").remove();
+      
+  gContextMenuTarget = target;
+
+  
+  // Show menu
+  $("#contextmenu #"+contextMenuId).show();
+  $("#contextmenu").css({left: x, top: y}).show();
+  $("#contextmenu #"+contextMenuId+' input[type="text"]').focus();
+  
+  suggestLinksInContextMenu();
+}
+
+function hideContextMenu() {
+  $("#contextmen").hide();
+  $("#contextmenu ul").hide();
+  $('#contextmenu #add-link input[type="text"]').val('');
+  $("#contextmenu #add-link li:not(.search)").remove();
+}
+
+function clearSelection() {
+  window.getSelection().removeAllRanges();
+}
+
+function removeLink() {
+  gContextMenuTarget.parentNode.insertBefore(document.createTextNode(gContextMenuTarget.innerText), gContextMenuTarget.nextSibling);
+  gContextMenuTarget.remove();
+  hideContextMenu();
+}
+
+function editLink() {
+  var viewportOffset = gContextMenuTarget.getBoundingClientRect();
+  showContextMenu('add-link', gContextMenuTarget);
+}
+
+function changeContentMenuTargetLink(url) {
+  gContextMenuTarget.href = url;
+  hideContextMenu();
+}
+
+// Intercept the *context menu* search box
+function suggestLinksInContextMenu() {
+  
+  // Clear existing results
+  $("#contextmenu #add-link li:not(.search)").remove();
+  
+  var searchesReturned = 0;
+  var resultsReturned = 0;
+
+  // Search
+  for (var schemaName in schemas) {
+    $.ajax({
+      url: gServerUrl+"/"+schemaName+"/search?q="+encodeURIComponent($('#contextmenu #add-link input[name="search"]').val()),
+    }).done(function(results) {
+      console.log($('#contextmenu #add-link input[name="search"]').val());
+      console.log(results);
+      searchesReturned++;
+      results.forEach(function(result) {
+        var type = result['@id'].split("/")[result['@id'].split("/").length-2];
+        $("#contextmenu #add-link").append('<li><a onclick="changeContentMenuTargetLink(\''+result['@id']+'\')"><strong>'+(result.name || "(Untitled)")+'</a></li>');
+        resultsReturned++;
+      });
+    });
+  };
 }

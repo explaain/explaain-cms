@@ -29,7 +29,7 @@ body,h1,h2,h3,h4,h5,p,li,.btn {
 #cards .card a {
   text-decoration: none;
   color: inherit;
-  padding: 2px 4px 0 4px;
+  padding: 2px 0px 0 0px;
   background: #ebebeb;
   text-decoration: none;
 }
@@ -182,4 +182,11 @@ textarea.form-control {
 
 label {
   color: #aaa;
+}
+
+
+.contextmenu {
+  z-index: 100000;
+  position: absolute;
+  display: none;
 }

@@ -41,6 +41,15 @@
 <div style="display: inline-block; width: 25%; height: 100%; float: right;">
   <iframe id="explaain" frameborder="0" style="height: 100%; width: 100%" src="//explaain-landing-swipe-across.herokuapp.com/demo/?editing=true&db=true"></iframe>
 </div>
+<div id="contextmenu" class="contextmenu">
+  <ul id="edit-link" class="dropdown-menu" style="display: block;">
+    <li><a href="#" onclick="editLink()"><i class="fa fa-fw fa-link"></i> Edit link</a></li>
+    <li><a href="#" onclick="removeLink()"><i class="fa fa-fw fa-trash"></i> Remove link</a></li>
+  </ul>
+  <ul id="add-link" class="dropdown-menu" style="display: block;">
+    <li class="search" style="padding: 0 10px;"><input name="search" type="text" class="form-control input-sm" placeholder="Search"/></li>
+  </ul>
+</div>
 <!-- Templates -->
 <%- include partials/headline-card.ejs %>
 <%- include partials/detail-card.ejs %>
