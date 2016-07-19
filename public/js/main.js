@@ -139,8 +139,9 @@ $(function() {
     $("#newCardContextMenuBtn .dropdown-menu").toggle();
   });
   
-  // Show card on load (left here so it can be easily enabled when testing)
-  showCard("https://explaain-api-develop.herokuapp.com/Person/57690520ad606e1100ca163e");
+  // Show card on load when running a local test environment
+  if (window.location.hostname == "localhost") 
+   showCard("https://explaain-api-develop.herokuapp.com/Person/57690520ad606e1100ca163e");
 });
 
 /**
