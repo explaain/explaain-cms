@@ -190,3 +190,16 @@ label {
   position: absolute;
   display: none;
 }
+
+.popover-content {
+  padding: 0px 4px;
+}
+
+.popover {
+  background-color: #444;
+  color: #fff;
+}
+
+.popover .arrow:after {
+  border-right-color: #444 !important;
+}

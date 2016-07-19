@@ -1,4 +1,7 @@
 var gServerUrl = "https://explaain-api-develop.herokuapp.com";
+if (window.location.hostname == "explaain-cms.herokuapp.com")
+  gServerUrl = "https://explaain-api.herokuapp.com";
+    
 var gApiKey = readCookie("apiKey");
 var gContextMenuTarget = null;
 var schemas = {};
@@ -19,8 +22,10 @@ var sendMessageToPreviewFrame = function(id, action) {
   }
 };
 
-
 $(function() {
+  
+  $("#server-url").text("Connected to "+gServerUrl);
+  
   if (!gApiKey)
     promptForApiKey();
 
@@ -37,8 +42,10 @@ $(function() {
       }).done(function(jsonSchema) {
         
         // If we have a template for this schema add it to the New Card dropdown
-        if ($('script[data-template="'+schemaName+'"]').length != 0)
+        if ($('script[data-template="'+schemaName+'"]').length != 0) {
           $("#newCardBtn .dropdown-menu").append('<li><a href="#" onclick="showCard(null, \''+schemaName+'\')">'+schemaName+'</a></li>');
+          $("#newCardContextMenu").append('<li><a href="#" onclick="hideContextMenu(); showCard(null, \''+schemaName+'\', true)"><i class="fa fa-fw fa-plus-circle"></i> Add '+schemaName+'</a></li>');
+        }
         
         schemas[schemaName] = jsonSchema;
       });
@@ -78,7 +85,7 @@ $(function() {
   });
   
   // Intercept the *context menu* search box
-  $('#contextmenu #add-link input[name="search"]').keyup(function(e) {
+  $('#contextmenu #addLinkContextMenu input[name="search"]').keyup(function(e) {
     if (e.keyCode == 13) {
       e.preventDefault();
       suggestLinksInContextMenu();
@@ -103,14 +110,14 @@ $(function() {
     var o = {};
     var a = this.serializeArray();
     $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
+      if (o[this.name] !== undefined) {
+        if (!o[this.name].push) {
+          o[this.name] = [o[this.name]];
         }
+        o[this.name].push(this.value || '');
+      } else {
+        o[this.name] = this.value || '';
+      }
     });
     return o;
   };
@@ -118,17 +125,22 @@ $(function() {
   // Handle focusing cards when child element (e.g. input field) has focus
   var handle = ally.style.focusWithin();
 
-
   $(document).click(function(event) { 
     // Clicking anywhere outside of the context menu when it is visible
     // should hide it.
-    if (!$(event.target).closest('#contextmenu').length)
-      if ($('#contextmenu').is(":visible"))
-        $('#contextmenu').hide();
+    if (!$(event.target).closest('#contextmenu').length && $('#contextmenu').is(":visible")) {
+      if (gContextMenuTarget && gContextMenuTarget.getAttribute('href') == "#")
+          removeLink();
+      $('#contextmenu').hide();
+    }
   })
   
+  $("#newCardContextMenuBtn").bind('click touch', function(e) {
+    $("#newCardContextMenuBtn .dropdown-menu").toggle();
+  });
   
-   showCard("https://explaain-api-develop.herokuapp.com/Detail/5786354064e97c11008ad9e7")
+  // Show card on load (left here so it can be easily enabled when testing)
+  showCard("https://explaain-api-develop.herokuapp.com/Person/57690520ad606e1100ca163e");
 });
 
 /**
@@ -143,7 +155,7 @@ function promptForApiKey() {
   saveCookie("apiKey", newApiKey);
 }
 
-function showCard(uri, schemaName) {
+function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
   var cardDialogOptions = {
     title: schemaName+" Card",
     appendTo: "#cards",
@@ -218,6 +230,13 @@ function showCard(uri, schemaName) {
         // Reinitalize textara
         initaliseTextarea($('.textarea', $('#cards .card[data-id="'+uri+'"]')));
         
+        $('.textarea a[href]:not("\\#")', card).popover({
+           placement: 'right',
+           trigger: 'hover',
+           html: true,
+           content: '…'
+         });
+         
         // Display card
         $('#cards .card[data-id="'+uri+'"]').parents(".ui-dialog").css({zIndex: highestZIndex+1, visibility: 'visible', opacity: 1}).focus();
       });
@@ -251,6 +270,14 @@ function showCard(uri, schemaName) {
       card.dialog(cardDialogOptions);
       
       initaliseTextarea($('.textarea', card));
+      
+      $('.textarea a[href]:not("\\#")', card).popover({
+         placement: 'right',
+         trigger: 'hover',
+         html: true,
+         content: '…'
+       });
+
     });
   } else {
     // Display new, blank card
@@ -263,7 +290,10 @@ function showCard(uri, schemaName) {
     var template = $.templates('script[data-template="'+schemaName+'"]');
     
     // Populate template
-    var html = template.render({id: "No ID assigned yet"});
+    var html = template.render({
+      id: "No ID assigned yet",
+      name: gContextMenuTarget.innerText || ""
+    });
   
     // Create new container for card (inside parent) and inject html
     var card = $('<div data-schema="'+schemaName+'" class="card">'+html+'</div>');
@@ -271,6 +301,24 @@ function showCard(uri, schemaName) {
     cardDialogOptions.title = schemaName+" Card";
     card.dialog(cardDialogOptions);
     initaliseTextarea($('.textarea', card));
+    
+    $('.textarea a[href]:not("\\#")', card).popover({
+       placement: 'right',
+       trigger: 'hover',
+       html: true,
+       content: '…'
+     });
+     
+    if (linkToSelectContextMenuTarget === true) {
+      // @FIXME Super hacky, but waits before saving card otherwise it might 
+      // not have been rendered yet. There isn't a call back we can use :-(
+      // but we should really test the DOM to see if the card is actually ready.
+      setTimeout(function() {
+        saveCard($("button", card), function(err, entity) {
+          changeContentMenuTargetLink(entity['@id']);
+        });
+      }, 500);
+    }
   }
 }
 
@@ -304,13 +352,13 @@ function saveCard(card, callback) {
       updateView(entity['@id']);
       toast("Card saved", "success");
       if (callback)
-        callback(null, entity)
+        return callback(null, entity)
     })
     .fail(function(err) {
       var message = err.message || "Unable to save changes";
       toast(message, "error");
       if (callback)
-        callback(message, entity)
+        return callback(message, entity)
     });
 
   } else {
@@ -344,15 +392,14 @@ function saveCard(card, callback) {
       updateView(entity['@id']);
       toast("Card created", "success");
       if (callback)
-        callback(null, entity)
+        return callback(null, entity)
     })
     .fail(function(err) {
       var message = err.message || "Unable to create new card";
       toast(message, "error");
       if (callback)
-        callback(message, entity)
+        return callback(message, entity)
     });
-
   }
 }
 
@@ -472,7 +519,7 @@ function initaliseTextarea(textarea) {
     var el = document.elementFromPoint(e.clientX, e.clientY);
     if (el.tagName == "A") {
 
-      showContextMenu('edit-link', el);
+      showContextMenu('editLinkContextMenu', el);
       clearSelection();
       return;
     } else {
@@ -482,7 +529,7 @@ function initaliseTextarea(textarea) {
       a.innerText = selectedText;
       range.insertNode(a);
       
-      showContextMenu('add-link', a);
+      showContextMenu('addLinkContextMenu', a);
       return;
     }
   });
@@ -523,14 +570,14 @@ function toast(message, type) {
 function getSelectedParentNode(range) {
   var selectedElement = null;
   if (rangeSelectsSingleNode(range)) {
-      // Selection encompasses a single element
-      selectedElement = range.startContainer.childNodes[range.startOffset];
+    // Selection encompasses a single element
+    selectedElement = range.startContainer.childNodes[range.startOffset];
   } else if (range.startContainer.nodeType === 3) {
-      // Selection range starts inside a text node, so get its parent
-      selectedElement = range.startContainer.parentNode;
+    // Selection range starts inside a text node, so get its parent
+    selectedElement = range.startContainer.parentNode;
   } else {
-      // Selection starts inside an element
-      selectedElement = range.startContainer;
+    // Selection starts inside an element
+    selectedElement = range.startContainer;
   }
   return selectedElement;
 }
@@ -545,6 +592,15 @@ function rangeSelectsSingleNode(range) {
 
 function showContextMenu(contextMenuId, target) {
   
+  // If no target but there is an old target, use the last target
+  if (!target && target !== false && gContextMenuTarget)
+    target = gContextMenuTarget;
+  
+  // If there is still no target then return
+  // @TODO Display at current mouse location
+  if (!target)
+    return;
+  
   var viewportOffset = target.getBoundingClientRect();
   x = viewportOffset.left;
   y = viewportOffset.bottom;
@@ -552,11 +608,10 @@ function showContextMenu(contextMenuId, target) {
   // Hide + reset menu
   $("#contextmen").hide();
   $("#contextmenu ul").hide();
-  $('#contextmenu #add-link input[type="text"]').val(target.innerText);
-  $("#contextmenu #add-link li:not(.search)").remove();
-      
+  $('#contextmenu #addLinkContextMenu input[type="text"]').val(target.innerText);
+  $("#contextmenu #addLinkContextMenu li.searchResult").remove();
+  
   gContextMenuTarget = target;
-
   
   // Show menu
   $("#contextmenu #"+contextMenuId).show();
@@ -569,8 +624,8 @@ function showContextMenu(contextMenuId, target) {
 function hideContextMenu() {
   $("#contextmen").hide();
   $("#contextmenu ul").hide();
-  $('#contextmenu #add-link input[type="text"]').val('');
-  $("#contextmenu #add-link li:not(.search)").remove();
+  $('#contextmenu #addLinkContextMenu input[type="text"]').val('');
+  $("#contextmenu #addLinkContextMenu li.searchResult").remove();
 }
 
 function clearSelection() {
@@ -583,11 +638,6 @@ function removeLink() {
   hideContextMenu();
 }
 
-function editLink() {
-  var viewportOffset = gContextMenuTarget.getBoundingClientRect();
-  showContextMenu('add-link', gContextMenuTarget);
-}
-
 function changeContentMenuTargetLink(url) {
   gContextMenuTarget.href = url;
   hideContextMenu();
@@ -595,26 +645,47 @@ function changeContentMenuTargetLink(url) {
 
 // Intercept the *context menu* search box
 function suggestLinksInContextMenu() {
-  
   // Clear existing results
-  $("#contextmenu #add-link li:not(.search)").remove();
-  
+  $("#contextmenu #addLinkContextMenu li.searchResult").remove();
+
+  if ($('#contextmenu #addLinkContextMenu input[name="search"]').val().length == 0)
+    return;
+    
   var searchesReturned = 0;
   var resultsReturned = 0;
 
   // Search
   for (var schemaName in schemas) {
     $.ajax({
-      url: gServerUrl+"/"+schemaName+"/search?q="+encodeURIComponent($('#contextmenu #add-link input[name="search"]').val()),
+      url: gServerUrl+"/"+schemaName+"/search?q="+encodeURIComponent($('#contextmenu #addLinkContextMenu input[name="search"]').val()),
     }).done(function(results) {
-      console.log($('#contextmenu #add-link input[name="search"]').val());
-      console.log(results);
       searchesReturned++;
       results.forEach(function(result) {
         var type = result['@id'].split("/")[result['@id'].split("/").length-2];
-        $("#contextmenu #add-link").append('<li><a onclick="changeContentMenuTargetLink(\''+result['@id']+'\')"><strong>'+(result.name || "(Untitled)")+'</a></li>');
+        $('<li class="searchResult">'
+          +'<a href="#" onclick="changeContentMenuTargetLink(\''+result['@id']+'\')">'
+          +'<i class="fa fa-caret-right"></i> '+(result.name || "(Untitled)")+'</a></li>')
+          .insertAfter("#contextmenu #addLinkContextMenu > li:first-child");
         resultsReturned++;
       });
     });
   };
 }
+
+var tmp = $.fn.popover.Constructor.prototype.show;
+$.fn.popover.Constructor.prototype.show = function() {
+  tmp.call(this);
+  var popover = $(this.$tip)[0];
+  $.ajax({
+    url: $(this.$element)[0].href
+  })
+  .done(function(entity) {
+    $(".popover-content", popover).text(entity.name);
+  })
+  .fail(function(err) {
+    $(".popover-content", popover).html('<i class="fa fa-chain-broken"></i> Card not found!');
+  });
+  if (this.options.callback) {
+    this.options.callback();
+  }
+};

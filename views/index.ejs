@@ -4,7 +4,7 @@
     <div class="pull-left"><h1 class="title">Explaain CMS</h1></div>
     <div id="newCardBtn" class="dropdown pull-right">
       <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-        <i class="fa fa-lg fa-fw fa-plus-circle"></i> New …
+        <i class="fa fa-lg fa-fw fa-plus-circle"></i> New Card…
         <i class="fa fa-fw fa-caret-down"></i>
       </button>
       <ul class="dropdown-menu"></ul>
@@ -25,15 +25,7 @@
   <div id="searchResults" style="overflow: auto; position: absolute; top: 0; left: 0; padding-left: 10px; padding-top: 120px; z-index: 3"></div>
   
   <div id="cards" style="position: absolute; top: 0; left; 0; height: 100%; width: 100%; overflow: hidden;">
-      <!--
-      <div id="json-editor"></div>
-      <div class="messages"></div>
-      <div id="json-editor-buttons" style="text-align: right;">
-        <button onclick="deleteCard()" class="btn btn-danger btn-delete pull-left"><i class="fa fa-lg fa-fw fa-trash"></i> Delete</button>
-        <button onclick="hideCard()" class="btn btn-default"><i class="fa fa-lg fa-fw fa-ban"></i> Close</button>
-        <button onclick="saveCard()" class="btn btn-primary"><i class="fa fa-lg fa-fw fa-check"></i> Save</button>
-      </div>
-      -->
+    <div id="server-url" class="text-muted" style="position: absolute; bottom: 5px; left: 5px"></div>
   </div>
   
 </div>
@@ -42,13 +34,16 @@
   <iframe id="explaain" frameborder="0" style="height: 100%; width: 100%" src="//explaain-landing-swipe-across.herokuapp.com/demo/?editing=true&db=true"></iframe>
 </div>
 <div id="contextmenu" class="contextmenu">
-  <ul id="edit-link" class="dropdown-menu" style="display: block;">
-    <li><a href="#" onclick="editLink()"><i class="fa fa-fw fa-link"></i> Edit link</a></li>
-    <li><a href="#" onclick="removeLink()"><i class="fa fa-fw fa-trash"></i> Remove link</a></li>
+  <ul id="editLinkContextMenu" class="dropdown-menu" style="display: block;">
+    <li><a href="#" onclick="showContextMenu('addLinkContextMenu')"><i class="fa fa-fw fa-link"></i> Edit link</a></li>
+    <li><a href="#" onclick="removeLink()"><i class="fa fa-fw fa-unlink"></i> Remove link</a></li>
   </ul>
-  <ul id="add-link" class="dropdown-menu" style="display: block;">
-    <li class="search" style="padding: 0 10px;"><input name="search" type="text" class="form-control input-sm" placeholder="Search"/></li>
+  <ul id="addLinkContextMenu" class="dropdown-menu" style="display: block;">
+    <li style="padding: 0 10px;"><input name="search" autocomplete="off" type="text" class="form-control input-sm" placeholder="Search"/></li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#" onclick="showContextMenu('newCardContextMenu')"><i class="fa fa-fw fa-plus-circle"></i> New card…</a></li>
   </ul>
+  <ul id="newCardContextMenu" class="dropdown-menu" style="display: block;"></ul>
 </div>
 <!-- Templates -->
 <%- include partials/headline-card.ejs %>
