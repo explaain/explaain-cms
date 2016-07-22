@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>
+  </head>
+  <body class="container">
+    <h1>How to add Explaain to your site</h1>
+    
+    <h2>Include the explaain Javascript</h2>
+    <p class="lead">Add this line of code anywhere on your site.</p>
+    <pre>&lt;script src="https://explaain-cms.herokuapp.com/embed/explaain.js"&gt;&lt;/script&gt;</pre>
+    <p class="lead">
+      The code is designed to be cross browser and not to require any dependancies. Everything is under the namespace
+      "explaain" so it should not clash with any Javascript already on your site.
+    </p>
+    
+    <h2>Add one or more elements with the class "explaain"</h2>
+    
+    <h3>Example 1</h3>
+    <p class="lead">Displaying Headline cards matching the keywords "Donald Trump".</p>
+    <pre>&lt;div class="explaain" data-keywords="Donald Trump"&gt;&lt;/div&gt;</pre>
+    <div class="explaain" data-keywords="Donald Trump"></div>
+
+    <h3>Example 2</h3>
+    <p class="lead">Display a specific card by it's ID.</p>
+    <pre>&lt;div class="explaain"data-id="https://explaain-api-develop.herokuapp.com/Organization/5787d1f6dac9821100609b1f"&gt;&lt;/div&gt;</pre>
+    <div class="explaain" data-id="https://explaain-api-develop.herokuapp.com/Organization/5787d1f6dac9821100609b1f"></div>
+    
+    <script src="explaain.js"></script>
+  </body>
+</html>

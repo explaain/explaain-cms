@@ -1,0 +1,234 @@
+body {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  font-family: Lato;
+  color: #333;
+}
+
+a:focus {
+  outline: 0;
+}
+
+.logo {
+  text-align: center;
+  background: #ddd;
+  position: fixed;
+  z-index: 100000;
+  text-align: center;
+  left: 0;
+  width: 100%;
+  padding: 10px 0;
+  margin-top: -20px;
+}
+
+.logo img {
+  position: relative;
+  margin: auto;
+  height: 55px;
+  margin: 0;
+}
+
+.cards {
+  margin: 0 auto;
+}
+
+.layer, .card, .card .card-visible, .card .card-spacer {
+  -webkit-transition: -webkit-transform 0.5s, height 0.5s, margin 0.5s, opacity 0.5s; /* Safari */
+  transition: transform 0.5s, height 0.5s, margin 0.5s, opacity 0.5s;
+}
+
+.layer > div {
+  margin-top: -10px;
+}
+
+.card {
+  margin: 0px 20px 20px 0;
+  padding: 0;
+  display: inline-block;
+}
+
+.card.standalone {
+  margin: 20px 15px 10px 15px;
+}
+
+.card:focus {outline:0;}
+
+.card .card-spacer {
+  position: relative;
+  z-index: -100;
+  margin: 10px 0;
+  height: 100px;
+  /*border: solid red 2px;*/
+}
+
+.card .card-visible {
+  /*position: absolute;*/
+  /*transform: scale(1,1);*/
+  /*width: 100%;*/
+  /*margin: 0 5px;*/
+  /*max-width: 340px;*/
+  border-radius: 15px;
+  border: 3px solid #eee;
+  overflow: hidden;
+  opacity: 1;
+  background: white;
+}
+
+.card .card-grey {
+  display: none;
+  z-index: 20;
+  position: absolute;
+  float: left;
+  height: 100%;
+  width: 100%;
+  /*pointer-events: none;*/
+}
+
+.card.faded .card-grey {
+  display: block;
+  background: rgba(221,221,221,0.4);
+  -webkit-transition: background 0.5s; /* Safari */
+  transition: background 0.5s;
+}
+
+
+.card.opening .card-visible {
+  transform: scale(0,0);
+  /*height: 0;*/
+  opacity: 0;
+}
+
+.card.faded .card-visible {
+  /*z-index: -1;*/
+  /*transform: scale(0.95,0.95);*/
+  /*margin-top: 15px;*/
+  /*opacity: 0.4;*/
+}
+
+.layer.removed, .card.removed {
+  -moz-transform: scale(0.01);
+  -webkit-transform: scale(0.01);
+  -o-transform: scale(0.01);
+  -ms-transform: scale(0.01);
+  transform: scale(0.01);
+}
+.card.opening .card-spacer, .card.removed .card-spacer {
+  height: 0;
+}
+
+.card .card-visible > i.close {
+  z-index: 30;
+  position: relative;
+  float: right;
+  top: 6px;
+  color: #bbb;
+  margin-right: 8px;
+}
+
+.card .card-visible > i.close:active {
+  color: #ff6e73;
+}
+
+.header-image {
+  height: 150px;
+  background: rgba(0,0,0,0.2);
+}
+
+.header-image img {
+  position: relative;
+  /*z-index: -1;*/
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-image h3 {
+  position: relative;
+  margin-top: -35px;
+  margin-left: 20px;
+  text-transform: uppercase;
+  color: white;
+}
+
+h2 {
+  padding: 0 20px;
+  font-size: 20px;
+}
+
+.body-content {
+  padding: 0 20px;
+  line-height: 1.9;
+}
+
+.body-content a {
+  padding: 0 3px;
+  background: #ebebeb;
+  border: 2px solid #ebebeb;
+  text-decoration: none;
+  color: #333;
+}
+
+.body-content a:active, .body-content a.active {
+  color: white;
+  background: #ff6e73;
+  border: 2px solid #ff6e73;
+}
+
+.card .edit-button {
+  display: none;
+  position: relative;
+  float: right;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 110, 115, 0.7);
+  background: #eee;
+  box-shadow: 1px 1px 1px -1px grey;
+  color: #999;
+  margin: -43px 8px 0 0px;
+  cursor: pointer;
+  outline: none;
+}
+/*.card:hover .edit-button {
+  display: block;
+}*/
+.card .edit-button:hover {
+  background: rgba(255, 110, 115, 1);
+  color: white;
+}
+.card .edit-button:active {
+  box-shadow: none;
+}
+
+.card-spacer {
+  height: 0;
+}
+
+@media (min-width: 568px) {
+  .body-content a:hover {
+    color: white;
+    background: #ff6e73;
+    border: 2px solid #ff6e73;
+  }
+  .card .card-visible > i.close {
+    opacity: 0;
+  }
+  .card .card-visible:hover > i.close {
+    opacity: 1;
+  }
+  .card .card-visible > i.close:hover {
+    color: #ff6e73;
+    cursor: pointer;
+  }
+  .card.faded .card-grey > div {
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0);
+  }
+  .card.faded .card-grey:hover > div {
+    background: rgba(255,255,255,0.1);
+  }
+}
