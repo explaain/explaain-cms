@@ -1,6 +1,12 @@
+/**
+ * Include a reference to this script to embed Explaain cards on your site.
+ * 
+ * This script is cross browser and has no dependancies.
+ * @version 1.1
+ */
 var explaain = new (function() {
-  var apiServer = "https://explaain-api-develop.herokuapp.com";
   
+  var apiServer = "https://explaain-api-develop.herokuapp.com";
   var cssUrl = "https://explaain-cms.herokuapp.com/embed/iframe/stylesheet.css";
   var jQueryUrl = "https://explaain-cms.herokuapp.com/embed/iframe/jquery-3.1.0.min.js";
   var markdownParserUrl = "https://explaain-cms.herokuapp.com/embed/iframe/marked.min.js";

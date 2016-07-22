@@ -1,3 +1,8 @@
+/**
+ * This Javascript is automatically included in iframes created by explaain.js
+ * @version 1.1
+ */
+
 // Parse response into JSON object object
 var cards = $.parseJSON( document.getElementById("jsonData").innerText  );
 
@@ -15,8 +20,6 @@ $('body').append(html);
 
 window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
 
-// Temporarily disabling links
-// @TODO Add card in view
 $("body").on("click touch", "a", function(e) {
   e.preventDefault();
   $.ajax({
