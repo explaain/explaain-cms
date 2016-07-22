@@ -1,21 +1,24 @@
 /**
  * Include a reference to this script to embed Explaain cards on your site.
- * 
+ *
  * This script is cross browser and has no dependancies.
  * @version 1.1
  */
 var explaain = new (function() {
-  
+
   var apiServer = "https://explaain-api-develop.herokuapp.com";
   var cssUrl = "https://explaain-cms.herokuapp.com/embed/iframe/stylesheet.css";
   var jQueryUrl = "https://explaain-cms.herokuapp.com/embed/iframe/jquery-3.1.0.min.js";
   var markdownParserUrl = "https://explaain-cms.herokuapp.com/embed/iframe/marked.min.js";
   var iframeJsUrl = "https://explaain-cms.herokuapp.com/embed/iframe/javascript.js";
-  
+
   /**
    * Run on page load
    */
   onPageReady(function() {
+    linkExplaainKeywords();
+    addExplaainStyles();
+
     var elements = document.getElementsByClassName("explaain");
     for (var i=0; i < elements.length; i++) {
       var element = elements[i];
@@ -38,7 +41,7 @@ var explaain = new (function() {
    */
   function insertIframe(target, url, css) {
     var iframeId = getRandomInt(100000, 999999)
-    
+
     var iframe = document.createElement('iframe');
     iframe.id = "iframe-"+iframeId;
     iframe.style.display = "block";
@@ -49,7 +52,7 @@ var explaain = new (function() {
     var cssParams = Object.keys(css);
     for (var i=0; i < cssParams.length; i++) {
       iframe.style[cssParams[i]] = css[cssParams[i]]
-    }  
+    }
     target.appendChild(iframe);
 
     ajax(url, function(err, response) {
@@ -68,7 +71,7 @@ var explaain = new (function() {
       iframeContents.close();
     });
   }
-  
+
   this.resizeIframe = function(iframeId, height, width) {
     console.log(height);
     document.getElementById(iframeId).style.height  = height+'px';
@@ -108,7 +111,7 @@ var explaain = new (function() {
       return elArray;
     }
   }
-  
+
   /**
    * Polyfill for Object.keys
    */
@@ -123,7 +126,7 @@ var explaain = new (function() {
       return keys;
     };
   }
-  
+
   /**
    * Cross browser AJAX request
    */
@@ -146,6 +149,33 @@ var explaain = new (function() {
   function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
+
+
+
+
+
+  // Jeremy's additions
+
+  function addExplaainStyles() {
+    var myExplaainStyles = 'a.explaain-link { padding: 0 3px; background: #ebebeb; border: 1px solid #ebebeb; text-decoration: none; color: #333; }';
+    myExplaainStyles = myExplaainStyles + ' a.explaain-link:hover { color: white; background: #ff6e73; border: 1px solid #ff6e73; }';
+    var myExplaainStyleTag = document.createElement('style');
+    myExplaainStyleTag = document.getElementsByTagName('head')[0].appendChild(myExplaainStyleTag);
+    myExplaainStyleTag.innerHTML = myExplaainStyles;
+    console.log(document.getElementsByTagName('head')[0]);
+  }
+
+  function linkExplaainKeywords() {
+    var textColumn = document.getElementById('content').getElementsByClassName('left-column')[0];
+    var textColumnContent = textColumn.innerHTML;
+    textColumnContent = textColumnContent.replace("Donald Trump", '<a href="#donald-trump" class="explaain-link">Donald Trump</a>');
+    textColumn.innerHTML = textColumnContent;
+  }
+
+  String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+  };
 
   return this;
 });
