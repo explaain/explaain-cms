@@ -73,7 +73,6 @@ var explaain = new (function() {
   }
 
   this.resizeIframe = function(iframeId, height, width) {
-    console.log(height);
     document.getElementById(iframeId).style.height  = height+'px';
     document.getElementById(iframeId).style.width  = width+'px';
   }
@@ -151,25 +150,23 @@ var explaain = new (function() {
   }
 
 
-
-
-
   // Jeremy's additions
-
   function addExplaainStyles() {
     var myExplaainStyles = 'a.explaain-link { padding: 0 3px; background: #ebebeb; border: 1px solid #ebebeb; text-decoration: none; color: #333; }';
     myExplaainStyles = myExplaainStyles + ' a.explaain-link:hover { color: white; background: #ff6e73; border: 1px solid #ff6e73; }';
     var myExplaainStyleTag = document.createElement('style');
     myExplaainStyleTag = document.getElementsByTagName('head')[0].appendChild(myExplaainStyleTag);
     myExplaainStyleTag.innerHTML = myExplaainStyles;
-    console.log(document.getElementsByTagName('head')[0]);
   }
 
   function linkExplaainKeywords() {
-    var textColumn = document.getElementById('content').getElementsByClassName('left-column')[0];
-    var textColumnContent = textColumn.innerHTML;
-    textColumnContent = textColumnContent.replace("Donald Trump", '<a href="#donald-trump" class="explaain-link">Donald Trump</a>');
-    textColumn.innerHTML = textColumnContent;
+    var content = document.getElementById('content');
+    if (!content)
+      return;
+    var textColumns = content.getElementsByClassName('left-column');
+    if (!textColumns)
+      return;
+    textColumns[0].innerHTML = textColumns[0].innerHTML.replace("Donald Trump", '<a href="#donald-trump" class="explaain-link">Donald Trump</a>');
   }
 
   String.prototype.replaceAll = function(search, replacement) {
