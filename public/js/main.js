@@ -293,7 +293,7 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
     // Populate template
     var html = template.render({
       id: "No ID assigned yet",
-      name: gContextMenuTarget.innerText || ""
+      name: gContextMenuTarget ? gContextMenuTarget.innerText || "" : ""
     });
 
     // Create new container for card (inside parent) and inject html
