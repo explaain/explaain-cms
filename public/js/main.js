@@ -1,7 +1,18 @@
-var gServerUrl = "https://explaain-api-develop.herokuapp.com";
-if (window.location.hostname == "explaain-cms.herokuapp.com")
-  gServerUrl = "https://explaain-api.herokuapp.com";
-    
+/**
+ * Code for the Explaain CMS
+ * 
+ * This code is all in one file and is somewhat hacky just to prove the concept.
+ */
+
+
+// Set the API server to dev (default) or live (if acessing via live CMS URL)
+var gServerHost= "api.dev.explaain.com";
+if (window.location.hostname == "cms.explaain.com")
+  gServerHost = "api.explaain.com";
+
+var gServerUrl = "http://"+gServerHost;
+
+
 var gApiKey = readCookie("apiKey");
 var gContextMenuTarget = null;
 var schemas = {};
@@ -23,8 +34,10 @@ var sendMessageToPreviewFrame = function(id, action) {
 };
 
 $(function() {
-  
+  // Display server URL in bottom left of the window
   $("#server-url").text("Connected to "+gServerUrl);
+  // Load the app in an iframe and tell it connect to the same API server we are connected to
+  $("#explaain").attr("src", "http://app.explaain.com/?editing=true&server="+encodeURIComponent(gServerUrl));
   
   if (!gApiKey)
     promptForApiKey();
@@ -139,9 +152,6 @@ $(function() {
     $("#newCardContextMenuBtn .dropdown-menu").toggle();
   });
   
-  // Show card on load when running a local test environment
-  if (window.location.hostname == "localhost") 
-   showCard("https://explaain-api-develop.herokuapp.com/Person/57690520ad606e1100ca163e");
 });
 
 /**
@@ -153,7 +163,7 @@ function promptForApiKey() {
   if (!newApiKey)
     return;
   gApiKey = newApiKey;
-  saveCookie("apiKey", newApiKey);
+  saveCookie("apiKey", newApiKey, 1000);
 }
 
 function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
