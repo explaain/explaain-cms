@@ -1,6 +1,6 @@
 /**
  * Code for the Explaain CMS
- * 
+ *
  * This code is all in one file and is somewhat hacky just to prove the concept.
  */
 
@@ -37,7 +37,7 @@ $(function() {
   // Display server URL in bottom left of the window
   $("#server-url").text("Connected to "+gServerUrl);
   // Load the app in an iframe and tell it connect to the same API server we are connected to
-  $("#explaain").attr("src", "http://app.explaain.com/?editing=true&server="+encodeURIComponent(gServerUrl));
+  $("#explaain").attr("src", "http://app.explaain.com/?editing=true&source="+encodeURIComponent(gServerUrl));
 
   if (!gApiKey)
     promptForApiKey();
