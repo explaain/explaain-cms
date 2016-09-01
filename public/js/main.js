@@ -5,10 +5,16 @@
  */
 
 
+console.log('databaseURI', databaseURI);
+
 // Set the API server to dev (default) or live (if acessing via live CMS URL)
 var gServerHost= "api.dev.explaain.com";
 if (window.location.hostname == "cms.explaain.com")
   gServerHost = "api.explaain.com";
+
+//Replaces everything above if databaseURI config variable is set
+if (databaseURI)
+  gServerHost = databaseURI;
 
 var gServerUrl = "http://"+gServerHost;
 

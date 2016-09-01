@@ -14,11 +14,9 @@ partials.register('.ejs', ejs);
 app.use(partials());
 
 app.get('/', function(request, response) {
-  response.render('index');
+  response.render('index', { databaseURI: process.env.DATABASE_URI });
 });
 
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
-
-
