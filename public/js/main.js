@@ -43,7 +43,7 @@ $(function() {
   // Display server URL in bottom left of the window
   $("#server-url").text("Connected to "+gServerUrl);
   // Load the app in an iframe and tell it connect to the same API server we are connected to
-  $("#explaain").attr("src", "http://app.explaain.com/?editing=true&source="+encodeURIComponent(gServerUrl));
+  $("#explaain").attr("src", "http://" + appURI + "?editing=true&source="+encodeURIComponent(gServerUrl));
 
   if (!gApiKey)
     promptForApiKey();

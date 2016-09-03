@@ -14,7 +14,7 @@ partials.register('.ejs', ejs);
 app.use(partials());
 
 app.get('/', function(request, response) {
-  response.render('index', { databaseURI: process.env.DATABASE_URI });
+  response.render('index', { databaseURI: process.env.DATABASE_URI, appURI: process.env.APP_URI });
 });
 
 app.listen(app.get('port'), function() {
