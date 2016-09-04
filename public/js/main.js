@@ -237,6 +237,9 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
         entity.id = entity['@id'];
         entity.links = (entity.links) ? entity.links.join(',') : [];
         entity.description = marked(entity.description);
+        if (entity.moreDetail) {
+          entity.moreDetail = marked(entity.moreDetail);
+        }
 
         // Populate template
         var html = template.render(entity);
@@ -277,6 +280,9 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
       entity.id = entity['@id'];
       entity.links = (entity.links) ? entity.links.join(',') : [];
       entity.description = marked(entity.description);
+      if (entity.moreDetail) {
+        entity.moreDetail = marked(entity.moreDetail);
+      }
 
       // Populate template
       var html = template.render(entity);
@@ -349,6 +355,10 @@ function saveCard(card, callback) {
 
     formData.description = $('.textarea[-data-name="description"]', $(card).parents('form')).html();
     formData.description = toMarkdown(formData.description);
+    formData.moreDetail = $('.textarea[-data-name="moreDetail"]', $(card).parents('form')).html();
+    if (formData.moreDetail) {
+      formData.moreDetail = toMarkdown(formData.moreDetail);
+    }
 
     formData.links = [];
     $("a", $('.textarea[-data-name="description"]', $(card).parents('form'))).each(function(){
@@ -384,6 +394,10 @@ function saveCard(card, callback) {
 
     formData.description = $('.textarea[-data-name="description"]', $(card).parents('form')).html();
     formData.description = toMarkdown(formData.description);
+    formData.moreDetail = $('.textarea[-data-name="moreDetail"]', $(card).parents('form')).html();
+    if (formData.moreDetail) {
+      formData.moreDetail = toMarkdown(formData.moreDetail);
+    }
 
     formData.links = [];
     $("a", $('.textarea[-data-name="description"]', $(card).parents('form'))).each(function(){
