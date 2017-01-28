@@ -22,15 +22,15 @@ var gApiKey = readCookie("apiKey");
 var gContextMenuTarget = null;
 var schemas = {};
 
-var sendMessageToPreviewFrame = function(id, action) {
+var sendMessageToPreviewFrame = function(key, action) {
   try {
     // Post message to the preview pane to let it now saving worked
     if (window.frames['explaain'].postMessage) {
       // e.g. Safari
-      window.frames['explaain'].postMessage({ action: action, id: id }, "*");
+      window.frames['explaain'].postMessage({ action: action, key: key }, "*");
     } else if (window.frames['explaain'].contentWindow.postMessage) {
       // e.g. Chrome, Firefox
-      window.frames['explaain'].contentWindow.postMessage({ action: action, id: id }, "*");
+      window.frames['explaain'].contentWindow.postMessage({ action: action, key: key }, "*");
     }
   } catch (e) {
     console.log("Error sending message to app-preview frame");
@@ -483,10 +483,10 @@ function previewCard(card) {
   if (!uri) {
     // If no URI, save the card (to generate one) and then preview it
     saveCard(card, function(err, entity) {
-      sendMessageToPreviewFrame(entity['@id'], 'preview');
+      sendMessageToPreviewFrame(entity['@id'], 'open');
     });
   } else {
-    sendMessageToPreviewFrame(uri, 'preview');
+    sendMessageToPreviewFrame(uri, 'open');
   }
 }
 
