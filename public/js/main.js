@@ -22,6 +22,9 @@ var gApiKey = readCookie("apiKey");
 var gContextMenuTarget = null;
 var schemas = {};
 
+//Add Airtable endpoint
+var airtableEndpoint = "https://api.airtable.com/v0/app0tlZDi3cEALxhe/"+airtableTable;
+
 var sendMessageToPreviewFrame = function(key, action) {
   try {
     // Post message to the preview pane to let it now saving worked
@@ -380,6 +383,9 @@ function saveCard(card, callback) {
       toast("Card saved", "success");
       if (callback)
         return callback(null, entity)
+
+      // Update card in airtable
+      updateAirtable('update', entity);
     })
     .fail(function(err) {
       var message = err.message || "Unable to save changes";
@@ -424,6 +430,9 @@ function saveCard(card, callback) {
       toast("Card created", "success");
       if (callback)
         return callback(null, entity)
+
+      // Add new card to airtable
+      updateAirtable('create', entity);
     })
     .fail(function(err) {
       var message = err.message || "Unable to create new card";
@@ -469,6 +478,9 @@ function deleteCard(card) {
       if (cardWithHighestZIndex)
         $(cardWithHighestZIndex).focus();
 
+      // Delete card from airtable
+      updateAirtable('delete', {'@id': uri});
+
       toast("Card deleted", "success");
     })
     .fail(function(err) {
@@ -477,6 +489,65 @@ function deleteCard(card) {
     });
   }
 }
+
+
+function updateAirtable(type, data) {
+  switch (type) {
+    case 'create':
+        var airtableCreateEndpoint = airtableEndpoint + "?api_key=" + airtableApiKey;
+        axios.post(airtableCreateEndpoint, {
+          "fields": {
+            "Card URL": data['@id'],
+            "Name": data.name,
+            "Description": data.description,
+            "Type": data['@type']
+          }
+        });
+      break;
+
+    case 'update':
+        var airtableListEndpoint = airtableEndpoint + "?api_key=" + airtableApiKey + '&filterByFormula=' + encodeURIComponent('{Card URL}="' + data['@id'] + '"');
+        axios.get(airtableListEndpoint)
+          .then(function(result) {
+            if (result.data.records.length) {
+              var airtableID = result.data.records[0].id;
+              airtableUpdateEndpoint = airtableEndpoint + '/' + airtableID + "?api_key=" + airtableApiKey;
+              axios.patch(airtableUpdateEndpoint, {
+                "fields": {
+                  "Card URL": data['@id'],
+                  "Name": data.name,
+                  "Description": data.description,
+                  "Type": data['@type']
+                }
+              });
+            } else {
+              updateAirtable('create', data);
+            }
+          });
+      break;
+
+    case 'delete':
+        var airtableListEndpoint = airtableEndpoint + "?api_key=" + airtableApiKey + '&filterByFormula=' + encodeURIComponent('{Card URL}="' + data['@id'] + '"');
+        axios.get(airtableListEndpoint)
+          .then(function(result) {
+            var airtableID = result.data.records[0].id;
+            airtableDeleteEndpoint = airtableEndpoint + '/' + airtableID + "?api_key=" + airtableApiKey;
+            axios.delete(airtableDeleteEndpoint);
+          });
+      break;
+  }
+}
+
+function getAirtableRecordID(cardURL) {
+  airtableListEndpoint = airtableEndpoint + "?api_key=" + airtableApiKey+'&filterByFormula="{Card%20URL}='+cardURL+'"';
+  axios.get(airtableListEndpoint)
+    .then(function(result) {
+      var airtableID = result.data.records[0].id;
+      airtableDeleteEndpoint = airtableEndpoint + '/' + airtableID + "?api_key=" + airtableApiKey;
+      axios.delete(airtableDeleteEndpoint);
+    });
+}
+
 
 function previewCard(card) {
   var uri =  $(card).parents(".card").attr('data-id');
