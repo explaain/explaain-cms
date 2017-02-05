@@ -239,9 +239,18 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
 
         entity.id = entity['@id'];
         entity.links = (entity.links) ? entity.links.join(',') : [];
-        entity.description = marked(entity.description);
-        if (entity.moreDetail) {
-          entity.moreDetail = marked(entity.moreDetail);
+
+        var possibleValues = [
+          'description',
+          'caption',
+          'moreDetail'
+        ]
+
+        for (i in possibleValues) {
+          var value = possibleValues[i];
+          if (entity[value]) {
+            entity[value] = marked(entity[value]);
+          }
         }
 
         // Populate template
@@ -282,9 +291,18 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
 
       entity.id = entity['@id'];
       entity.links = (entity.links) ? entity.links.join(',') : [];
-      entity.description = marked(entity.description);
-      if (entity.moreDetail) {
-        entity.moreDetail = marked(entity.moreDetail);
+
+      var possibleValues = [
+        'description',
+        'caption',
+        'moreDetail'
+      ]
+
+      for (i in possibleValues) {
+        var value = possibleValues[i];
+        if (entity[value]) {
+          entity[value] = marked(entity[value]);
+        }
       }
 
       // Populate template
@@ -356,11 +374,20 @@ function saveCard(card, callback) {
     // Update existing card
     var formData = $(card).parents('form').serializeObject();
 
-    formData.description = $('.textarea[-data-name="description"]', $(card).parents('form')).html();
-    formData.description = toMarkdown(formData.description);
-    formData.moreDetail = $('.textarea[-data-name="moreDetail"]', $(card).parents('form')).html();
-    if (formData.moreDetail) {
-      formData.moreDetail = toMarkdown(formData.moreDetail);
+    console.log(formData);
+
+    var possibleValues = [
+      'description',
+      'caption',
+      'moreDetail'
+    ]
+
+    for (i in possibleValues) {
+      var value = possibleValues[i];
+      formData[value] = $('.textarea[-data-name="' + value + '"]', $(card).parents('form')).html();
+      if (formData[value]) {
+        formData[value] = toMarkdown(formData[value]);
+      }
     }
 
     formData.links = [];
@@ -398,11 +425,18 @@ function saveCard(card, callback) {
     // Create new card
     var formData = $(card).parents('form').serializeObject();
 
-    formData.description = $('.textarea[-data-name="description"]', $(card).parents('form')).html();
-    formData.description = toMarkdown(formData.description);
-    formData.moreDetail = $('.textarea[-data-name="moreDetail"]', $(card).parents('form')).html();
-    if (formData.moreDetail) {
-      formData.moreDetail = toMarkdown(formData.moreDetail);
+    var possibleValues = [
+      'description',
+      'caption',
+      'moreDetail'
+    ]
+
+    for (i in possibleValues) {
+      var value = possibleValues[i];
+      formData[value] = $('.textarea[-data-name="' + value + '"]', $(card).parents('form')).html();
+      if (formData[value]) {
+        formData[value] = toMarkdown(formData[value]);
+      }
     }
 
     formData.links = [];
