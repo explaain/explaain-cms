@@ -1,0 +1,17 @@
+<script data-template="Embed" type="text/x-jsrender">
+  <form autocomplete="off">
+    <div class="from-group">
+      <label>Name</label>
+      <input type="text" class="form-control" name="name" value="{{:name}}" />
+    </div>
+    <div class="from-group">
+      <label>Caption</label>
+      <div -data-name="caption" class="textarea">{{:caption}}</div>
+    </div>
+    <div class="from-group">
+      <label><i class="fa fa-fw fa-image"></i> Embed Code</label>
+      <input type="text" class="form-control" name="embedUrl" value="{{:embedUrl}}" />
+    </div>
+    <%- include card/footer.ejs %>
+  </form>
+</script>
