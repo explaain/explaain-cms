@@ -240,16 +240,29 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
         entity.id = entity['@id'];
         entity.links = (entity.links) ? entity.links.join(',') : [];
 
-        var possibleValues = [
+        var markdownFields = [
           'description',
           'caption',
           'moreDetail'
         ]
 
-        for (i in possibleValues) {
-          var value = possibleValues[i];
+        for (i in markdownFields) {
+          var value = markdownFields[i];
           if (entity[value]) {
             entity[value] = marked(entity[value]);
+          }
+        }
+
+        var encodeFields = [
+          'embedCode'
+        ]
+
+        for (i in encodeFields) {
+          var value = encodeFields[i];
+          if (entity[value]) {
+            console.log(entity[value]);
+            entity[value] = decodeURIComponent(entity[value]).replace(/"/g, '&quot;');
+            console.log(entity[value]);
           }
         }
 
@@ -292,16 +305,29 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
       entity.id = entity['@id'];
       entity.links = (entity.links) ? entity.links.join(',') : [];
 
-      var possibleValues = [
+      var markdownFields = [
         'description',
         'caption',
         'moreDetail'
       ]
 
-      for (i in possibleValues) {
-        var value = possibleValues[i];
+      for (i in markdownFields) {
+        var value = markdownFields[i];
         if (entity[value]) {
           entity[value] = marked(entity[value]);
+        }
+      }
+
+      var encodeFields = [
+        'embedCode'
+      ]
+
+      for (i in encodeFields) {
+        var value = encodeFields[i];
+        if (entity[value]) {
+          console.log(entity[value]);
+          entity[value] = decodeURIComponent(entity[value]).replace(/"/g, '&quot;');
+          console.log(entity[value]);
         }
       }
 
@@ -372,23 +398,37 @@ function saveCard(card, callback) {
 
   if (uri) {
     // Update existing card
+    console.log($(card).parents('form'));
     var formData = $(card).parents('form').serializeObject();
 
     console.log(formData);
 
-    var possibleValues = [
+    var markdownFields = [
       'description',
       'caption',
       'moreDetail'
     ]
 
-    for (i in possibleValues) {
-      var value = possibleValues[i];
+    for (i in markdownFields) {
+      var value = markdownFields[i];
       formData[value] = $('.textarea[-data-name="' + value + '"]', $(card).parents('form')).html();
       if (formData[value]) {
         formData[value] = toMarkdown(formData[value]);
       }
     }
+
+    var encodeFields = [
+      'embedCode'
+    ]
+
+    for (i in encodeFields) {
+      var value = encodeFields[i];
+      if (formData[value]) {
+        formData[value] = encodeURIComponent(formData[value].replace(/"/g, '&quot;'));
+      }
+    }
+
+    console.log(formData);
 
     formData.links = [];
     $("a", $('.textarea[-data-name="description"]', $(card).parents('form'))).each(function(){
@@ -425,17 +465,29 @@ function saveCard(card, callback) {
     // Create new card
     var formData = $(card).parents('form').serializeObject();
 
-    var possibleValues = [
+    var markdownFields = [
       'description',
       'caption',
       'moreDetail'
     ]
 
-    for (i in possibleValues) {
-      var value = possibleValues[i];
+    for (i in markdownFields) {
+      var value = markdownFields[i];
       formData[value] = $('.textarea[-data-name="' + value + '"]', $(card).parents('form')).html();
       if (formData[value]) {
         formData[value] = toMarkdown(formData[value]);
+      }
+    }
+
+
+    var encodeFields = [
+      'embedCode'
+    ]
+
+    for (i in encodeFields) {
+      var value = encodeFields[i];
+      if (formData[value]) {
+        formData[value] = encodeURIComponent(formData[value].replace(/"/g, '&quot;'));
       }
     }
 
