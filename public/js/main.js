@@ -130,7 +130,9 @@ $(function() {
 
   $.fn.serializeObject = function(){
     var o = {};
+    console.log(this);
     var a = this.serializeArray();
+    console.log(a);
     $.each(a, function() {
       if (o[this.name] !== undefined) {
         if (!o[this.name].push) {
@@ -141,6 +143,7 @@ $(function() {
         o[this.name] = this.value || '';
       }
     });
+    console.log(JSON.stringify(o));
     return o;
   };
 
@@ -243,7 +246,12 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
         var markdownFields = [
           'description',
           'caption',
-          'moreDetail'
+          'moreDetail',
+          'question',
+          'answer1',
+          'answer2',
+          'answer3',
+          'answer4'
         ]
 
         for (i in markdownFields) {
@@ -308,7 +316,12 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
       var markdownFields = [
         'description',
         'caption',
-        'moreDetail'
+        'moreDetail',
+        'question',
+        'answer1',
+        'answer2',
+        'answer3',
+        'answer4'
       ]
 
       for (i in markdownFields) {
@@ -406,7 +419,12 @@ function saveCard(card, callback) {
     var markdownFields = [
       'description',
       'caption',
-      'moreDetail'
+      'moreDetail',
+      'question',
+      'answer1',
+      'answer2',
+      'answer3',
+      'answer4'
     ]
 
     for (i in markdownFields) {
@@ -416,6 +434,7 @@ function saveCard(card, callback) {
         formData[value] = toMarkdown(formData[value]);
       }
     }
+    console.log(formData);
 
     var encodeFields = [
       'embedCode'
@@ -435,6 +454,8 @@ function saveCard(card, callback) {
       if (formData.links.indexOf(this.href) == -1)
         formData.links.push(this.href);
     });
+
+    console.log(formData);
 
     $.ajax({
       type: 'PUT',
@@ -468,7 +489,12 @@ function saveCard(card, callback) {
     var markdownFields = [
       'description',
       'caption',
-      'moreDetail'
+      'moreDetail',
+      'question',
+      'answer1',
+      'answer2',
+      'answer3',
+      'answer4'
     ]
 
     for (i in markdownFields) {
@@ -496,6 +522,8 @@ function saveCard(card, callback) {
       if (formData.links.indexOf(this.href) == -1)
         formData.links.push(this.href);
     });
+
+    console.log(formData);
 
     $.ajax({
       type: 'POST',
