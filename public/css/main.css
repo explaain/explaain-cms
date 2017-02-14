@@ -146,6 +146,11 @@ textarea {
   -webkit-overflow-scrolling: touch;
 }
 
+.card[data-schema="Question"] .textarea {
+  height: auto;
+  min-height: 0;
+}
+
 .textarea p:last-child {
   margin-bottom: 0;
 }
