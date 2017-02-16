@@ -192,6 +192,11 @@ function showCard(uri, schemaName, linkToSelectContextMenuTarget) {
     // want to handle anyway with server side events in case a card is updated
     // by someone else on another browser!
     beforeClose: function(event, ui) {
+
+      if (!event.metaKey && !event.ctrlKey && !confirm("Are you sure you want to close this card?")) {
+        return false;
+      };
+
       $(this).parents(".ui-dialog").css({visibility: 'hidden', opacity: 0, zIndex: 0});
 
       // Move focus to card with highest zIndex
