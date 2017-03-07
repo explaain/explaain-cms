@@ -609,6 +609,92 @@ function deleteCard(card) {
   }
 }
 
+$('#uploadbutton').click(function(){
+  $('input[type=file]#upload').click();
+});
+
+$('input[type=file]#upload').change(function() {
+  $('input[type=file]#upload').parse({
+    config: {
+      delimiter: "",	// auto-detect
+      newline: "",	// auto-detect
+      quoteChar: '"',
+      header: true,
+      dynamicTyping: false,
+      preview: 0,
+      encoding: "",
+      worker: false,
+      comments: false,
+      step: undefined,
+      complete: function(results, file) {
+        createMultipleCards(results.data);
+        $("input[type=file]#upload").replaceWith($("input[type=file]#upload").val('').clone(true));
+        toast("File uploaded!", "success");
+      },
+      error: undefined,
+      download: false,
+      skipEmptyLines: false,
+      chunk: undefined,
+      fastMode: undefined,
+      beforeFirstChunk: undefined,
+      withCredentials: undefined
+    },
+    before: function(file, inputElem)
+    {
+      // executed before parsing each file begins;
+      // what you return here controls the flow
+    },
+    error: function(err, file, inputElem, reason)
+    {
+      // executed if an error occurs while loading the file,
+      // or if before callback aborted for some reason
+    },
+    complete: function()
+    {
+      // executed after all files are complete
+    }
+  });
+});
+
+
+function createMultipleCards(cards) {
+
+  cards.forEach(function(card) {
+    var schemaName = card.type;
+
+    geturl = new RegExp(
+          "\(((ftp|http|https|gopher|mailto|news|nntp|telnet|wais|file|prospero|aim|webcal):(([A-Za-z0-9$_.+!*(),;\/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;\/?:@&~=%-]*))?([A-Za-z0-9$_+!*();\/?:~-]))\)"
+         ,"g"
+       );
+    card.links = card.description.match(geturl) || [];
+    card.links.forEach(function(link, i) {
+      card.links[i] = link.substring(0, link.length - 1);
+    });
+
+    console.log(card);
+
+    $.ajax({
+      type: 'POST',
+      url: gServerUrl+"/"+schemaName,
+      data: card,
+      headers: {
+        'x-api-key': gApiKey
+      }
+    })
+    .done(function(entity) {
+      updateView();
+      // toast("Card created", "success");
+
+      // Add new card to airtable
+      updateAirtable('create', entity);
+    })
+    .fail(function(err) {
+      var message = err.message || "Unable to create new card";
+      toast(message, "error");
+    });
+  });
+}
+
 
 function updateAirtable(type, data) {
   switch (type) {

@@ -12,6 +12,8 @@
     <button class="btn btn-default pull-right" style="margin-right: 10px;" type="button" onclick="promptForApiKey()">
       <i class="fa fa-lg fa-fw fa-cog"></i> API Key
     </button>
+    <div id="uploadbutton" class="btn btn-default pull-right" style="margin-right: 10px;">Upload CSV</div>
+    <input class="btn btn-default pull-right" style="visibility:hidden;" type="file" id="upload" multiple>
   </div>
 
   <div style="position: absolute; left: 0; top: 65px; width: 350px; z-index: 4">
@@ -73,4 +75,5 @@
 <script src="js/jquery.toTextarea.js"></script>
 <script src="js/toastr.js"></script>
 <script src="js/axios.min.js"></script>
+<script src="js/papaparse.min.js"></script>
 <script src="js/main.js"></script>
