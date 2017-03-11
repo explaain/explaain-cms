@@ -93,6 +93,7 @@ $(function() {
       $.ajax({
         url: gServerUrl+"/"+schemaName+"/search?q="+encodeURIComponent($('#search input[name="search"]').val()),
       }).done(function(results) {
+        results = archiveDuplicates(results);
         searchesReturned++;
         results.forEach(function(result) {
           var type = result['@id'].split("/")[result['@id'].split("/").length-2];
@@ -461,6 +462,8 @@ function saveCard(card, callback) {
     });
 
     console.log(formData);
+
+    formData.archive = true;
 
     $.ajax({
       type: 'PUT',
@@ -997,3 +1000,37 @@ $.fn.popover.Constructor.prototype.show = function() {
     this.options.callback();
   }
 };
+
+
+
+
+function archiveDuplicates(cards) {
+  var cardCollection = [];
+  $.each(cards, function(i, card) {
+    var dup = $.grep(cardCollection, function(c) {
+      return c.name == card.name;
+    });
+    if (dup.length) {
+      var cardToArchive = dup[0];
+      if (Object.keys(dup[0]).length > Object.keys(card).length) {
+        cardToArchive = card;
+      }
+      cardToArchive.archive = true;
+      $.ajax({
+        type: 'PUT',
+        url: cardToArchive['@id'],
+        data: cardToArchive,
+        headers: {
+          'x-api-key': gApiKey
+        }
+      })
+    } else {
+      cardCollection.push(card);
+    }
+  });
+  return cardCollection;
+}
+
+function archiveCard(uri) {
+
+}
