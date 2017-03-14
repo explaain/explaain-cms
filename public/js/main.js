@@ -475,8 +475,6 @@ function saveCard(card, callback) {
 
     console.log(formData);
 
-    formData.archive = true;
-
     $.ajax({
       type: 'PUT',
       url: uri,
@@ -620,7 +618,7 @@ function deleteCard(card) {
       updateAirtable('delete', {'@id': uri});
 	  //DD
 	  updateAlgolia ('deleteObjects', {'@id': uri});
-	  
+
       toast("Card deleted", "success");
     })
     .fail(function(err) {
@@ -768,7 +766,7 @@ function updateAirtable(type, data) {
 //DD
 function updateAlgolia(type,data){
 	switch (type){
-	
+
 	case 'addObjects':
 		var cards = [{
 			objectID : data['@id'],
@@ -781,9 +779,9 @@ function updateAlgolia(type,data){
 				console.log(err);
 			}
 		});
-	
+
 	break;
-	
+
 	case 'saveObjects':
 			var cards = [{
 				objectID : data['@id'],
@@ -795,19 +793,19 @@ function updateAlgolia(type,data){
 				if (err) {
 					console.log(err);
 				}
-			});		
-			
-	
+			});
+
+
 	break;
-	
-	
+
+
 	case 'deleteObjects':
 		AlgoliaIndex.deleteObjects([data['@id']], function(err, content) {
 			if (err){
 				console.log(err);
 			}
 		});
-		
+
 	break;
 	}
 }
@@ -1073,7 +1071,7 @@ function archiveDuplicates(cards) {
   var cardCollection = [];
   $.each(cards, function(i, card) {
     var dup = $.grep(cardCollection, function(c) {
-      return c.name == card.name;
+      return c.name == card.name && c['@id'] != card['@id'] && c.archive != true;
     });
     if (dup.length) {
       var cardToArchive = dup[0];
