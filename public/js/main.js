@@ -772,7 +772,8 @@ function updateAlgolia(type,data){
 			objectID : data['@id'],
 			name: data.name,
 			description: data.description,
-			type: data['@type']
+			type: data['@type'],
+      archive: data.archive
 		}];
 		AlgoliaIndex.addObjects(cards, function(err, content) {
 			if (err){
@@ -787,7 +788,8 @@ function updateAlgolia(type,data){
 				objectID : data['@id'],
 				name: data.name,
 				description: data.description,
-				type: data['@type']
+				type: data['@type'],
+        archive: data.archive
 			}];
 			AlgoliaIndex.saveObjects(cards, function(err, content) {
 				if (err) {
