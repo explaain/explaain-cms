@@ -22,16 +22,6 @@ var gApiKey = readCookie("apiKey");
 var gContextMenuTarget = null;
 var schemas = {};
 
-//DD
-//SECURITY RISK: this contains Write API Key so should be in backend
-
-
-var Client = algoliasearch('I2VKMNNAXI', 'cc48ccb52b8d7b7bfcd4aa6790e0dca4',{
-	protocol: 'https:'
-});
-var AlgoliaIndex = Client.initIndex('cards');
-
-
 //Add Airtable endpoint
 var airtableEndpoint = "https://api.airtable.com/v0/app0tlZDi3cEALxhe/"+airtableTable;
 
@@ -492,8 +482,7 @@ function saveCard(card, callback) {
 
       // Update card in airtable
       updateAirtable('update', entity);
-	  //DD
-	  updateAlgolia('saveObjects', entity);
+
     })
     .fail(function(err) {
       var message = err.message || "Unable to save changes";
@@ -567,8 +556,7 @@ function saveCard(card, callback) {
 
       // Add new card to airtable
       updateAirtable('create', entity);
-	  //DD
-	  updateAlgolia('addObjects', entity) ;
+
     })
     .fail(function(err) {
       var message = err.message || "Unable to create new card";
@@ -616,9 +604,6 @@ function deleteCard(card) {
 
       // Delete card from airtable
       updateAirtable('delete', {'@id': uri});
-	  //DD
-	  updateAlgolia ('deleteObjects', {'@id': uri});
-
       toast("Card deleted", "success");
     })
     .fail(function(err) {
@@ -706,8 +691,7 @@ function createMultipleCards(cards) {
 
       // Add new card to airtable
       updateAirtable('create', entity);
-	  //DD
-	  updateAlgolia('addObjects', entity);
+
     })
     .fail(function(err) {
       var message = err.message || "Unable to create new card";
@@ -763,54 +747,7 @@ function updateAirtable(type, data) {
       break;
   }
 }
-//DD
-function updateAlgolia(type,data){
-	switch (type){
 
-	case 'addObjects':
-		var cards = [{
-			objectID : data['@id'],
-			name: data.name,
-			description: data.description,
-			type: data['@type'],
-      archive: data.archive
-		}];
-		AlgoliaIndex.addObjects(cards, function(err, content) {
-			if (err){
-				console.log(err);
-			}
-		});
-
-	break;
-
-	case 'saveObjects':
-			var cards = [{
-				objectID : data['@id'],
-				name: data.name,
-				description: data.description,
-				type: data['@type'],
-        archive: data.archive
-			}];
-			AlgoliaIndex.saveObjects(cards, function(err, content) {
-				if (err) {
-					console.log(err);
-				}
-			});
-
-
-	break;
-
-
-	case 'deleteObjects':
-		AlgoliaIndex.deleteObjects([data['@id']], function(err, content) {
-			if (err){
-				console.log(err);
-			}
-		});
-
-	break;
-	}
-}
 function getAirtableRecordID(cardURL) {
   airtableListEndpoint = airtableEndpoint + "?api_key=" + airtableApiKey+'&filterByFormula="{Card%20URL}='+cardURL+'"';
   axios.get(airtableListEndpoint)
